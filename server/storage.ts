@@ -2785,7 +2785,10 @@ Create memorable moments that make players excited for the next session while ad
 
 import { SupabaseStorage } from "./supabase-storage";
 
-export const storage: IStorage =
-  process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
-    ? new SupabaseStorage()
-    : new MemStorage();
+const hasSupabaseUrl = !!process.env.SUPABASE_URL;
+const hasServiceRole = !!process.env.SUPABASE_SERVICE_ROLE_KEY;
+const hasAnon = !!process.env.VITE_SUPABASE_ANON_KEY;
+
+export const storage: IStorage = hasSupabaseUrl && (hasServiceRole || hasAnon)
+  ? new SupabaseStorage()
+  : new MemStorage();

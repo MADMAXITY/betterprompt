@@ -6,6 +6,35 @@ import { insertPromptSchema, insertCategorySchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health + diagnostics
+  app.get("/api/health", async (_req, res) => {
+    try {
+      // import inside to avoid circulars
+      const { storage } = await import("./storage");
+      const usingSupabase = storage.constructor.name.toLowerCase().includes("supabase");
+      let counts: any = {};
+      try {
+        const categories = await storage.getCategories();
+        const prompts = await storage.getPrompts();
+        counts = { categories: categories.length, prompts: prompts.length };
+      } catch (e) {
+        counts = { error: (e as Error).message };
+      }
+      res.json({
+        ok: true,
+        storage: usingSupabase ? "supabase" : "memory",
+        env: {
+          SUPABASE_URL: !!process.env.SUPABASE_URL,
+          SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+          VITE_SUPABASE_ANON_KEY: !!process.env.VITE_SUPABASE_ANON_KEY,
+          VERCEL: !!process.env.VERCEL,
+        },
+        counts,
+      });
+    } catch (e) {
+      res.status(500).json({ ok: false, error: (e as Error).message });
+    }
+  });
   // Categories routes
   app.get("/api/categories", async (req, res) => {
     try {

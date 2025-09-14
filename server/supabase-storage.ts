@@ -20,7 +20,7 @@ type DbPrompt = Omit<Prompt, "createdAt" | "updatedAt"> & {
 export class SupabaseStorage {
   private supabase = createClient(
     process.env.SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY)!,
   );
 
   constructor() {
@@ -44,6 +44,8 @@ export class SupabaseStorage {
   }
 
   private async seedIfEmpty() {
+    // Only attempt seeding when using service role; anon key cannot upsert with RLS typically
+    if (!process.env.SUPABASE_SERVICE_ROLE_KEY) return;
     const { count: catCount } = await this.supabase
       .from("categories")
       .select("id", { count: "exact", head: true });

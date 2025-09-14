@@ -7,7 +7,10 @@ app.use(express.urlencoded({ extended: false }));
 
 await registerRoutes(app as any);
 
-export default function handler(req: any, res: any) {
-  return (app as any)(req, res);
-}
+// Mount Express app under /api so that incoming /api/* paths hit the registered /api routes
+const handlerApp = express();
+handlerApp.use("/api", app);
 
+export default function handler(req: any, res: any) {
+  return (handlerApp as any)(req, res);
+}

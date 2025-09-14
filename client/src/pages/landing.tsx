@@ -32,7 +32,7 @@ export default function Landing() {
               ]}
             />
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground">
-              Level Up Your Prompt Workflow
+              Work Smarter With Better Prompts
             </h1>
             <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
               Curated prompt library, an AI-powered builder, and a clean workspace for saving and refining your creations.

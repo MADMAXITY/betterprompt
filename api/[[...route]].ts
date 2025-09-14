@@ -75,6 +75,23 @@ app.get("/api/categories", async (_req, res) => {
   res.json(data || []);
 });
 
+// Helpers
+function mapRowToPrompt(row: any) {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    content: row.content,
+    categoryId: row.category_id,
+    isFeatured: !!row.is_featured,
+    views: row.views ?? 0,
+    likes: row.likes ?? 0,
+    createdAt: row.created_at ? new Date(row.created_at) : new Date(),
+    updatedAt: row.updated_at ? new Date(row.updated_at) : new Date(),
+    category: row.category,
+  };
+}
+
 // Prompts list and filters
 app.get("/api/prompts", async (req, res) => {
   try {
@@ -91,7 +108,8 @@ app.get("/api/prompts", async (req, res) => {
 
     const { data, error } = await query;
     if (error) return res.status(500).json({ message: error.message });
-    res.json(data || []);
+    const mapped = (data || []).map(mapRowToPrompt);
+    res.json(mapped);
   } catch (e) {
     res.status(500).json({ message: (e as Error).message });
   }
@@ -107,7 +125,7 @@ app.get("/api/prompts/:id", async (req, res) => {
     .maybeSingle();
   if (error) return res.status(500).json({ message: error.message });
   if (!data) return res.status(404).json({ message: "Prompt not found" });
-  res.json(data);
+  res.json(mapRowToPrompt(data));
 });
 
 export default function handler(req: any, res: any) {

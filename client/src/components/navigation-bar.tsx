@@ -16,11 +16,15 @@ export default function NavigationBar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo and Brand */}
           <div className="flex items-center space-x-4">
-            <Link href="/" className="flex items-center space-x-2" data-testid="link-home">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <i className="fas fa-magic text-primary-foreground text-sm"></i>
-              </div>
-              <span className="text-xl font-bold text-foreground">Better Prompt</span>
+            <Link href="/" className="group flex items-center gap-3" data-testid="link-home" title="Better Prompt">
+              <img
+                src="/fav.png"
+                alt="Better Prompt logo"
+                className="h-9 w-9 rounded-xl ring-1 ring-border/60 shadow-sm group-hover:shadow transition-shadow"
+              />
+              <span className="text-xl font-semibold tracking-tight text-foreground leading-none">
+                Better Prompt
+              </span>
             </Link>
           </div>
 

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import NavigationBar from "@/components/navigation-bar";
+import WizardBuilder from "@/components/wizard-builder";
 import MobileNavigation from "@/components/mobile-navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,9 @@ interface GeneratedPrompt {
 export default function AIBuilder() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
+  
+  // Builder mode state
+  const [builderMode, setBuilderMode] = useState<'simple' | 'wizard'>('simple');
   
   // Form state
   const [goal, setGoal] = useState("");
@@ -182,6 +186,21 @@ export default function AIBuilder() {
     }
   };
 
+  const handleWizardComplete = (wizardData: any, generatedContent: string) => {
+    // Create a generated prompt from wizard data
+    const wizardPrompt = {
+      title: `Wizard Prompt: ${wizardData.goal}`,
+      description: `AI-generated prompt from wizard: ${wizardData.primaryObjective || wizardData.goal}`,
+      content: generatedContent,
+      suggestedCategory: "Writing" // Default category
+    };
+    
+    setGeneratedPrompt(wizardPrompt);
+    setEditedContent(generatedContent);
+    setCustomTitle(wizardPrompt.title);
+    setCustomDescription(wizardPrompt.description);
+  };
+
   const getCategoryColor = (categoryName: string) => {
     switch (categoryName.toLowerCase()) {
       case "writing": return "bg-primary/10 text-primary";
@@ -199,11 +218,45 @@ export default function AIBuilder() {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">AI Prompt Builder</h1>
-          <p className="text-muted-foreground">
-            Describe your goal and let AI create a powerful, detailed prompt for you.
-          </p>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground mb-2">AI Prompt Builder</h1>
+              <p className="text-muted-foreground">
+                {builderMode === 'wizard' 
+                  ? 'Build your perfect prompt step-by-step with guided assistance.'
+                  : 'Describe your goal and let AI create a powerful, detailed prompt for you.'
+                }
+              </p>
+            </div>
+            
+            {/* Builder Mode Switcher */}
+            <div className="flex bg-muted rounded-lg p-1">
+              <Button
+                variant={builderMode === 'simple' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setBuilderMode('simple')}
+                className="rounded-md"
+                data-testid="button-simple-mode"
+              >
+                <i className="fas fa-bolt mr-2"></i>Quick Build
+              </Button>
+              <Button
+                variant={builderMode === 'wizard' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setBuilderMode('wizard')}
+                className="rounded-md"
+                data-testid="button-wizard-mode"
+              >
+                <i className="fas fa-magic mr-2"></i>Wizard
+              </Button>
+            </div>
+          </div>
         </div>
+
+        {/* Conditional Builder Rendering */}
+        {builderMode === 'wizard' ? (
+          <WizardBuilder onComplete={handleWizardComplete} />
+        ) : (
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Input Form */}
@@ -464,6 +517,7 @@ export default function AIBuilder() {
             )}
           </div>
         </div>
+        )}
       </div>
 
       <MobileNavigation />

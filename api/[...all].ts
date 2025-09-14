@@ -5,17 +5,12 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// On Vercel, this catch-all function may receive paths like "/prompts".
-// Our Express routes are registered under "/api/*". Normalize to include the prefix.
-app.use((req, _res, next) => {
-  if (!req.url.startsWith("/api/")) {
-    req.url = req.url.startsWith("/") ? `/api${req.url}` : `/api/${req.url}`;
-  }
-  next();
-});
-
 await registerRoutes(app as any);
 
+// Mount the app under /api so requests like /api/prompts hit the registered routes
+const handlerApp = express();
+handlerApp.use("/api", app);
+
 export default function handler(req: any, res: any) {
-  return (app as any)(req, res);
+  return (handlerApp as any)(req, res);
 }

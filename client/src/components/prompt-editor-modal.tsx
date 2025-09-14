@@ -18,13 +18,15 @@ interface PromptEditorModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave?: (prompt: PromptWithCategory) => void;
+  onEditWithAI?: (prompt: PromptWithCategory) => void;
 }
 
 export default function PromptEditorModal({ 
   prompt, 
   isOpen, 
   onClose, 
-  onSave 
+  onSave,
+  onEditWithAI 
 }: PromptEditorModalProps) {
   const [editedContent, setEditedContent] = useState("");
   const [isSaved, setIsSaved] = useState(false);
@@ -142,6 +144,15 @@ export default function PromptEditorModal({
               data-testid="button-copy"
             >
               <i className="fas fa-copy mr-1"></i>Copy
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => onEditWithAI?.(prompt)}
+              className="text-primary hover:text-primary/80 border-primary/20"
+              data-testid="button-edit-ai"
+            >
+              <i className="fas fa-wand-magic-sparkles mr-1"></i>Edit with AI
             </Button>
             <Button 
               variant="outline" 

@@ -11,9 +11,10 @@ interface PromptCardProps {
   prompt: PromptWithCategory;
   onClick: () => void;
   onSaveToggle?: () => void;
+  onEditWithAI?: (prompt: PromptWithCategory) => void;
 }
 
-export default function PromptCard({ prompt, onClick, onSaveToggle }: PromptCardProps) {
+export default function PromptCard({ prompt, onClick, onSaveToggle, onEditWithAI }: PromptCardProps) {
   const [isSaved, setIsSaved] = useState(localStorageService.isPromptSaved(prompt.id));
   const { toast } = useToast();
 
@@ -95,6 +96,24 @@ export default function PromptCard({ prompt, onClick, onSaveToggle }: PromptCard
           {prompt.description}
         </p>
         
+        {/* Action buttons */}
+        <div className="flex items-center justify-between mb-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              // This will be handled by the parent component
+              onEditWithAI?.(prompt);
+            }}
+            className="text-primary hover:text-primary/80 border-primary/20 hover:border-primary/40"
+            data-testid={`button-edit-ai-${prompt.id}`}
+          >
+            <i className="fas fa-wand-magic-sparkles mr-2"></i>
+            Edit with AI
+          </Button>
+        </div>
+
         <div className="flex items-center justify-between text-xs text-muted-foreground">
           <div className="flex items-center space-x-3">
             <span data-testid={`text-views-${prompt.id}`}>

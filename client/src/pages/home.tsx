@@ -5,6 +5,7 @@ import Sidebar from "@/components/sidebar";
 import SearchHeader from "@/components/search-header";
 import PromptCard from "@/components/prompt-card";
 import PromptEditorModal from "@/components/prompt-editor-modal";
+import AIEditModal from "@/components/ai-edit-modal";
 import MobileNavigation from "@/components/mobile-navigation";
 import { type PromptWithCategory } from "@shared/schema";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
@@ -17,6 +18,8 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPrompt, setSelectedPrompt] = useState<PromptWithCategory | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [aiEditPrompt, setAiEditPrompt] = useState<PromptWithCategory | null>(null);
+  const [isAiEditOpen, setIsAiEditOpen] = useState(false);
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -97,6 +100,26 @@ export default function Home() {
     queryClient.invalidateQueries({ queryKey: ["/api/prompts"] });
   };
 
+  const handleEditWithAI = (prompt: PromptWithCategory) => {
+    setAiEditPrompt(prompt);
+    setIsAiEditOpen(true);
+  };
+
+  const handleAIEditComplete = (originalPrompt: PromptWithCategory, editedContent: string) => {
+    // Create a new prompt object with the edited content
+    const editedPrompt = { 
+      ...originalPrompt, 
+      content: editedContent,
+      title: `${originalPrompt.title} (AI Edited)`
+    };
+    
+    // Open the editor modal with the AI-edited prompt
+    setSelectedPrompt(editedPrompt);
+    setIsEditorOpen(true);
+    setIsAiEditOpen(false);
+    setAiEditPrompt(null);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <NavigationBar />
@@ -140,6 +163,7 @@ export default function Home() {
                         prompt={prompt}
                         onClick={() => handlePromptClick(prompt)}
                         onSaveToggle={handleSaveToggle}
+                        onEditWithAI={handleEditWithAI}
                       />
                     ))}
                   </div>
@@ -196,6 +220,7 @@ export default function Home() {
                         prompt={prompt}
                         onClick={() => handlePromptClick(prompt)}
                         onSaveToggle={handleSaveToggle}
+                        onEditWithAI={handleEditWithAI}
                       />
                     ))}
                   </div>
@@ -215,6 +240,17 @@ export default function Home() {
           setIsEditorOpen(false);
           setSelectedPrompt(null);
         }}
+        onEditWithAI={handleEditWithAI}
+      />
+
+      <AIEditModal
+        prompt={aiEditPrompt}
+        isOpen={isAiEditOpen}
+        onClose={() => {
+          setIsAiEditOpen(false);
+          setAiEditPrompt(null);
+        }}
+        onEditComplete={handleAIEditComplete}
       />
     </div>
   );

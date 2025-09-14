@@ -6,6 +6,14 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Normalize to /api/* in case Vercel maps the function at /api with subpaths stripped
+app.use((req, _res, next) => {
+  if (!req.url.startsWith("/api/")) {
+    req.url = req.url.startsWith("/") ? `/api${req.url}` : `/api/${req.url}`;
+  }
+  next();
+});
+
 // Register routes (returns an http.Server in node usage, which we ignore here)
 await registerRoutes(app as any);
 
@@ -13,4 +21,3 @@ await registerRoutes(app as any);
 export default function handler(req: any, res: any) {
   return (app as any)(req, res);
 }
-

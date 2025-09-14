@@ -157,6 +157,79 @@ Respond with JSON in this format:
       return [];
     }
   }
+
+  async chatPromptBuilder(messages: Array<{role: string, content: string}>): Promise<{
+    message: string;
+    suggestions?: string[];
+    isComplete: boolean;
+    finalPrompt?: string;
+    title?: string;
+    category?: string;
+    description?: string;
+  }> {
+    try {
+      const systemPrompt = `You are an expert prompt engineer who helps users create perfect prompts through natural conversation. Your goal is to understand their needs through dialogue and eventually create a comprehensive, professional prompt.
+
+Process:
+1. Start with friendly greeting and ask about their goal
+2. Ask follow-up questions to understand:
+   - What they want to accomplish
+   - Who the target audience is
+   - What tone/style they prefer
+   - What format they want the output in
+   - Any specific constraints or requirements
+3. When you have enough information (usually 3-4 exchanges), create the final prompt
+
+Response format - ALWAYS respond with JSON:
+For ongoing conversation:
+{
+  "message": "Your conversational response with follow-up question",
+  "suggestions": ["Quick response option 1", "Quick response option 2", "Quick response option 3"],
+  "isComplete": false
+}
+
+For final completion:
+{
+  "message": "Perfect! I've created your custom prompt based on our conversation.",
+  "isComplete": true,
+  "finalPrompt": "The complete, professional prompt with [PLACEHOLDERS]",
+  "title": "Descriptive title for the prompt", 
+  "category": "Writing|Coding|Marketing|Business|Education|Creative|Productivity",
+  "description": "Brief description of what this prompt does"
+}
+
+Keep the conversation natural, friendly, and focused. Ask one key question at a time.`;
+
+      const response = await openai.chat.completions.create({
+        model: "gpt-5",
+        messages: [
+          { role: "system", content: systemPrompt },
+          ...messages
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.7,
+        max_tokens: 800
+      });
+
+      const result = JSON.parse(response.choices[0].message.content || "{}");
+      
+      return {
+        message: result.message || "I'd be happy to help you create a great prompt! What would you like to accomplish?",
+        suggestions: result.suggestions,
+        isComplete: result.isComplete || false,
+        finalPrompt: result.finalPrompt,
+        title: result.title,
+        category: result.category,
+        description: result.description
+      };
+    } catch (error) {
+      console.error("Failed to process chat:", error);
+      return {
+        message: "I apologize, but I'm having trouble processing that. Could you try rephrasing your request?",
+        isComplete: false
+      };
+    }
+  }
 }
 
 export const aiService = new AIService();

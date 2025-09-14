@@ -179,6 +179,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/ai/chat-prompt-builder", async (req, res) => {
+    try {
+      const schema = z.object({
+        messages: z.array(z.object({
+          role: z.string(),
+          content: z.string()
+        })),
+        isComplete: z.boolean().optional()
+      });
+
+      const validatedData = schema.parse(req.body);
+      const result = await aiService.chatPromptBuilder(validatedData.messages);
+      res.json(result);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      } else {
+        res.status(500).json({ 
+          message: "Failed to process chat", 
+          error: error instanceof Error ? error.message : "Unknown error"
+        });
+      }
+    }
+  });
+
   // Saved prompts routes (for future user system)
   app.get("/api/saved-prompts/:userId", async (req, res) => {
     try {

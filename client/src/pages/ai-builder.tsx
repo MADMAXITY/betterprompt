@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import NavigationBar from "@/components/navigation-bar";
 import WizardBuilder from "@/components/wizard-builder";
+import { ChatBuilder } from "@/components/chat-builder";
 import MobileNavigation from "@/components/mobile-navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,7 +32,7 @@ export default function AIBuilder() {
   const { toast } = useToast();
   
   // Builder mode state
-  const [builderMode, setBuilderMode] = useState<'simple' | 'wizard'>('simple');
+  const [builderMode, setBuilderMode] = useState<'simple' | 'wizard' | 'chat'>('simple');
   
   // Form state
   const [goal, setGoal] = useState("");
@@ -201,6 +202,36 @@ export default function AIBuilder() {
     setCustomDescription(wizardPrompt.description);
   };
 
+  const handleChatComplete = (prompt: string, metadata: {
+    title: string;
+    category: string;
+    description: string;
+    conversation: any[];
+  }) => {
+    // Create a generated prompt from chat data
+    const chatPrompt = {
+      title: metadata.title,
+      description: metadata.description,
+      content: prompt,
+      suggestedCategory: metadata.category
+    };
+    
+    setGeneratedPrompt(chatPrompt);
+    setEditedContent(prompt);
+    setCustomTitle(chatPrompt.title);
+    setCustomDescription(chatPrompt.description);
+    
+    // Set the category properly and switch to simple mode for seamless save flow
+    setSelectedCategory(metadata.category);
+    setBuilderMode('simple');
+    
+    // Show success toast
+    toast({
+      title: "Prompt Generated!",
+      description: "Your conversational prompt is ready. You can now save it to your library.",
+    });
+  };
+
   const getCategoryColor = (categoryName: string) => {
     switch (categoryName.toLowerCase()) {
       case "writing": return "bg-primary/10 text-primary";
@@ -224,6 +255,8 @@ export default function AIBuilder() {
               <p className="text-muted-foreground">
                 {builderMode === 'wizard' 
                   ? 'Build your perfect prompt step-by-step with guided assistance.'
+                  : builderMode === 'chat'
+                  ? 'Have a natural conversation to build your perfect prompt.'  
                   : 'Describe your goal and let AI create a powerful, detailed prompt for you.'
                 }
               </p>
@@ -241,6 +274,15 @@ export default function AIBuilder() {
                 <i className="fas fa-bolt mr-2"></i>Quick Build
               </Button>
               <Button
+                variant={builderMode === 'chat' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setBuilderMode('chat')}
+                className="rounded-md"
+                data-testid="button-chat-mode"
+              >
+                <i className="fas fa-comments mr-2"></i>Chat
+              </Button>
+              <Button
                 variant={builderMode === 'wizard' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setBuilderMode('wizard')}
@@ -256,6 +298,8 @@ export default function AIBuilder() {
         {/* Conditional Builder Rendering */}
         {builderMode === 'wizard' ? (
           <WizardBuilder onComplete={handleWizardComplete} />
+        ) : builderMode === 'chat' ? (
+          <ChatBuilder onComplete={handleChatComplete} />
         ) : (
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">

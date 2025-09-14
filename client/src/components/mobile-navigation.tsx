@@ -13,11 +13,11 @@ export default function MobileNavigation() {
           variant="ghost"
           asChild
           className={`flex flex-col items-center p-2 h-auto ${
-            isActive("/") ? "text-primary" : "text-muted-foreground"
+            isActive("/library") ? "text-primary" : "text-muted-foreground"
           }`}
           data-testid="button-mobile-nav-library"
         >
-          <Link href="/">
+          <Link href="/library">
             <i className="fas fa-home text-lg"></i>
             <span className="text-xs mt-1">Library</span>
           </Link>

@@ -24,7 +24,15 @@ export default function MyPrompts() {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [aiEditPrompt, setAiEditPrompt] = useState<PromptWithCategory | null>(null);
   const [isAiEditOpen, setIsAiEditOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState("saved");
+  const initialTab = (() => {
+    try {
+      const p = new URLSearchParams(window.location.search).get("tab");
+      return p === "created" ? "created" : "saved";
+    } catch {
+      return "saved";
+    }
+  })();
+  const [activeTab, setActiveTab] = useState(initialTab);
   type DeleteTarget = { id: string; type: 'saved' | 'created' } | null;
   const [deleteTarget, setDeleteTarget] = useState<DeleteTarget>(null);
   const { toast } = useToast();
@@ -171,7 +179,7 @@ export default function MyPrompts() {
             <div className="flex justify-center space-x-4">
               {activeTab === "saved" ? (
                 <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  <Link href="/" data-testid="link-browse-library">
+                  <Link href="/library" data-testid="link-browse-library">
                     <i className="fas fa-book mr-2"></i>Browse Library
                   </Link>
                 </Button>

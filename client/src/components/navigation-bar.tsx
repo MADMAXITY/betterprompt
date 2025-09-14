@@ -27,9 +27,9 @@ export default function NavigationBar() {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
             <Link 
-              href="/" 
+              href="/library" 
               className={`transition-colors font-medium ${
-                isActive("/") 
+                isActive("/library") 
                   ? "text-primary" 
                   : "text-foreground hover:text-primary"
               }`}
@@ -96,9 +96,9 @@ export default function NavigationBar() {
           <div className="md:hidden py-4 border-t border-border">
             <div className="flex flex-col space-y-4">
               <Link 
-                href="/" 
+                href="/library" 
                 className={`text-left px-2 py-1 transition-colors ${
-                  isActive("/") 
+                  isActive("/library") 
                     ? "text-primary font-medium" 
                     : "text-foreground hover:text-primary"
                 }`}

@@ -35,6 +35,7 @@ export class MemStorage implements IStorage {
   private categories: Map<string, Category>;
   private prompts: Map<string, Prompt>;
   private savedPrompts: Map<string, SavedPrompt>;
+  private seeded: boolean = false;
 
   constructor() {
     this.users = new Map();
@@ -42,11 +43,17 @@ export class MemStorage implements IStorage {
     this.prompts = new Map();
     this.savedPrompts = new Map();
     
-    // Initialize with default data
-    this.initializeDefaultData();
+    // Initialize with default data. In serverless environments we also
+    // guard reads with ensureSeeded() to handle cold starts.
+    try {
+      this.initializeDefaultData();
+    } catch {
+      // Will seed on first read
+    }
   }
 
   private initializeDefaultData() {
+    if (this.seeded && this.categories.size > 0 && this.prompts.size > 0) return;
     // Create default categories
     const defaultCategories: Category[] = [
       { id: randomUUID(), name: "Writing", icon: "fas fa-pen-nib", color: "primary", description: "Content creation and copywriting prompts" },
@@ -2574,6 +2581,13 @@ Create memorable moments that make players excited for the next session while ad
     defaultPrompts.forEach(prompt => {
       this.prompts.set(prompt.id, prompt);
     });
+    this.seeded = true;
+  }
+
+  private ensureSeeded() {
+    if (!this.seeded || this.categories.size === 0) {
+      this.initializeDefaultData();
+    }
   }
 
   // User methods
@@ -2594,14 +2608,17 @@ Create memorable moments that make players excited for the next session while ad
 
   // Category methods
   async getCategories(): Promise<Category[]> {
+    this.ensureSeeded();
     return Array.from(this.categories.values());
   }
 
   async getCategoryById(id: string): Promise<Category | undefined> {
+    this.ensureSeeded();
     return this.categories.get(id);
   }
 
   async createCategory(insertCategory: InsertCategory): Promise<Category> {
+    this.ensureSeeded();
     const id = randomUUID();
     const category: Category = { ...insertCategory, id, description: insertCategory.description || null };
     this.categories.set(id, category);
@@ -2610,6 +2627,7 @@ Create memorable moments that make players excited for the next session while ad
 
   // Prompt methods
   async getPrompts(): Promise<PromptWithCategory[]> {
+    this.ensureSeeded();
     return Array.from(this.prompts.values()).map(prompt => ({
       ...prompt,
       category: this.categories.get(prompt.categoryId)!
@@ -2617,6 +2635,7 @@ Create memorable moments that make players excited for the next session while ad
   }
 
   async getPromptById(id: string): Promise<PromptWithCategory | undefined> {
+    this.ensureSeeded();
     const prompt = this.prompts.get(id);
     if (!prompt) return undefined;
     
@@ -2627,6 +2646,7 @@ Create memorable moments that make players excited for the next session while ad
   }
 
   async getPromptsByCategory(categoryId: string): Promise<PromptWithCategory[]> {
+    this.ensureSeeded();
     return Array.from(this.prompts.values())
       .filter(prompt => prompt.categoryId === categoryId)
       .map(prompt => ({
@@ -2636,6 +2656,7 @@ Create memorable moments that make players excited for the next session while ad
   }
 
   async getFeaturedPrompts(): Promise<PromptWithCategory[]> {
+    this.ensureSeeded();
     return Array.from(this.prompts.values())
       .filter(prompt => prompt.isFeatured)
       .map(prompt => ({
@@ -2645,6 +2666,7 @@ Create memorable moments that make players excited for the next session while ad
   }
 
   async searchPrompts(query: string): Promise<PromptWithCategory[]> {
+    this.ensureSeeded();
     const lowerQuery = query.toLowerCase();
     return Array.from(this.prompts.values())
       .filter(prompt => 
@@ -2659,6 +2681,7 @@ Create memorable moments that make players excited for the next session while ad
   }
 
   async createPrompt(insertPrompt: InsertPrompt): Promise<Prompt> {
+    this.ensureSeeded();
     const id = randomUUID();
     const now = new Date();
     const prompt: Prompt = {
@@ -2675,6 +2698,7 @@ Create memorable moments that make players excited for the next session while ad
   }
 
   async updatePrompt(id: string, updates: Partial<InsertPrompt>): Promise<Prompt | undefined> {
+    this.ensureSeeded();
     const prompt = this.prompts.get(id);
     if (!prompt) return undefined;
     
@@ -2688,6 +2712,7 @@ Create memorable moments that make players excited for the next session while ad
   }
 
   async incrementPromptViews(id: string): Promise<void> {
+    this.ensureSeeded();
     const prompt = this.prompts.get(id);
     if (prompt) {
       prompt.views = (prompt.views || 0) + 1;
@@ -2696,6 +2721,7 @@ Create memorable moments that make players excited for the next session while ad
   }
 
   async incrementPromptLikes(id: string): Promise<void> {
+    this.ensureSeeded();
     const prompt = this.prompts.get(id);
     if (prompt) {
       prompt.likes = (prompt.likes || 0) + 1;
@@ -2705,6 +2731,7 @@ Create memorable moments that make players excited for the next session while ad
 
   // Saved prompts methods
   async getSavedPrompts(userId: string): Promise<PromptWithCategory[]> {
+    this.ensureSeeded();
     const userSavedPrompts = Array.from(this.savedPrompts.values())
       .filter(saved => saved.userId === userId);
     
@@ -2718,6 +2745,7 @@ Create memorable moments that make players excited for the next session while ad
   }
 
   async savePrompt(insertSavedPrompt: InsertSavedPrompt): Promise<SavedPrompt> {
+    this.ensureSeeded();
     const id = randomUUID();
     const savedPrompt: SavedPrompt = {
       ...insertSavedPrompt,
@@ -2729,6 +2757,7 @@ Create memorable moments that make players excited for the next session while ad
   }
 
   async unsavePrompt(promptId: string, userId: string): Promise<void> {
+    this.ensureSeeded();
     const savedPrompt = Array.from(this.savedPrompts.entries())
       .find(([_, saved]) => saved.promptId === promptId && saved.userId === userId);
     
@@ -2738,6 +2767,7 @@ Create memorable moments that make players excited for the next session while ad
   }
 
   async isPromptSaved(promptId: string, userId: string): Promise<boolean> {
+    this.ensureSeeded();
     return Array.from(this.savedPrompts.values())
       .some(saved => saved.promptId === promptId && saved.userId === userId);
   }

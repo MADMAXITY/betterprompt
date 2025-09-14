@@ -1,0 +1,59 @@
+1. Writing & Content
+
+Blog Post Writer – “Write a 1,000-word blog post about {{topic}}, targeting {{audience}}, with a {{tone}} tone.”
+
+Social Media Post – “Generate a 280-character tweet about {{topic}} that’s witty, engaging, and encourages replies.”
+
+Ad Copy Generator – “Write 3 Facebook ad variations for {{product}} focusing on {{benefit}}.”
+
+YouTube Script – “Draft a 3-minute YouTube script about {{topic}} with an engaging hook and clear CTA.”
+
+🔹 2. Business & Marketing
+
+Cold Email Template – “Write a persuasive cold email for {{product}} targeting {{audience}} that highlights {{pain point}}.”
+
+Product Description – “Generate an Amazon product description for {{product}} optimized for SEO.”
+
+Landing Page Copy – “Write landing page copy for {{service}} that emphasizes trust and urgency.”
+
+Customer Persona Builder – “Create a detailed buyer persona for {{industry}} including demographics, goals, and pain points.”
+
+🔹 3. Coding & Technical
+
+Code Explainer – “Explain this piece of code in simple terms for a beginner: {{paste code here}}.”
+
+Regex Builder – “Write a regex that matches {{pattern description}}.”
+
+Debug Assistant – “Find bugs and suggest fixes for this code: {{paste code}}.”
+
+SQL Query Generator – “Generate an SQL query to {{goal}} from a table with {{columns}}.”
+
+🔹 4. Learning & Education
+
+Language Tutor – “Teach me how to say {{phrase}} in {{language}}, then give me 3 practice exercises.”
+
+Study Notes Generator – “Summarize {{topic}} into easy-to-read bullet points for revision.”
+
+Quiz Creator – “Create a 10-question multiple choice quiz on {{topic}} with answers.”
+
+Step-by-Step Explainer – “Explain {{concept}} step by step as if teaching a beginner.”
+
+🔹 5. Personal Productivity
+
+Daily Planner – “Generate a structured daily plan for {{goals}} in {{hours available}}.”
+
+Brainstorming Ideas – “Give me 10 creative ideas for {{topic}} with pros and cons.”
+
+Meeting Summarizer – “Summarize these meeting notes into key takeaways and action items: {{notes}}.”
+
+Decision Helper – “List pros and cons of {{decision}} and suggest a recommendation.”
+
+🔹 6. Creative / Fun
+
+Story Starter – “Write the opening paragraph of a short story about {{theme}} in the style of {{author}}.”
+
+Poem Generator – “Write a poem about {{topic}} in {{style}}.”
+
+Roleplay Character – “You are {{character}}, roleplay a conversation with me about {{topic}}.”
+
+Game Master – “Act as a DnD game master guiding a party through a {{setting}} adventure.”

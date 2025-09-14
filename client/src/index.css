@@ -1,0 +1,313 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(0 0% 100%);
+  --foreground: hsl(234 16% 5%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(234 16% 5%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(234 16% 5%);
+  --primary: hsl(256 80% 60%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(220 14% 96%);
+  --secondary-foreground: hsl(220 9% 46%);
+  --muted: hsl(220 14% 96%);
+  --muted-foreground: hsl(220 9% 46%);
+  --accent: hsl(220 14% 96%);
+  --accent-foreground: hsl(234 16% 5%);
+  --destructive: hsl(0 84% 60%);
+  --destructive-foreground: hsl(0 0% 98%);
+  --border: hsl(220 13% 91%);
+  --input: hsl(220 13% 91%);
+  --ring: hsl(256 80% 60%);
+  --chart-1: hsl(256 80% 60%);
+  --chart-2: hsl(171 77% 44%);
+  --chart-3: hsl(48 96% 53%);
+  --chart-4: hsl(142 76% 36%);
+  --chart-5: hsl(339 82% 52%);
+  --sidebar: hsl(220 14% 98%);
+  --sidebar-foreground: hsl(234 16% 5%);
+  --sidebar-primary: hsl(256 80% 60%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(220 14% 93%);
+  --sidebar-accent-foreground: hsl(234 16% 5%);
+  --sidebar-border: hsl(220 13% 91%);
+  --sidebar-ring: hsl(256 80% 60%);
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Georgia', 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono', 'Menlo', 'Monaco', monospace;
+  --radius: 0.75rem;
+  --shadow-2xs: 0px 1px 2px 0px hsl(234 16% 5% / 0.05);
+  --shadow-xs: 0px 1px 3px 0px hsl(234 16% 5% / 0.1), 0px 1px 2px 0px hsl(234 16% 5% / 0.06);
+  --shadow-sm: 0px 1px 3px 0px hsl(234 16% 5% / 0.1), 0px 1px 2px 0px hsl(234 16% 5% / 0.06);
+  --shadow: 0px 4px 6px -1px hsl(234 16% 5% / 0.1), 0px 2px 4px -1px hsl(234 16% 5% / 0.06);
+  --shadow-md: 0px 6px 16px -4px hsl(234 16% 5% / 0.1), 0px 4px 6px -2px hsl(234 16% 5% / 0.05);
+  --shadow-lg: 0px 12px 16px -4px hsl(234 16% 5% / 0.08), 0px 4px 6px -2px hsl(234 16% 5% / 0.03);
+  --shadow-xl: 0px 20px 25px -5px hsl(234 16% 5% / 0.1), 0px 8px 10px -6px hsl(234 16% 5% / 0.1);
+  --shadow-2xl: 0px 25px 50px -12px hsl(234 16% 5% / 0.25);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+
+.dark {
+  --background: hsl(234 16% 5%);
+  --foreground: hsl(220 14% 96%);
+  --card: hsl(234 16% 8%);
+  --card-foreground: hsl(220 14% 96%);
+  --popover: hsl(234 16% 8%);
+  --popover-foreground: hsl(220 14% 96%);
+  --primary: hsl(256 80% 60%);
+  --primary-foreground: hsl(0 0% 100%);
+  --secondary: hsl(234 16% 12%);
+  --secondary-foreground: hsl(220 14% 70%);
+  --muted: hsl(234 16% 12%);
+  --muted-foreground: hsl(220 9% 56%);
+  --accent: hsl(234 16% 12%);
+  --accent-foreground: hsl(220 14% 96%);
+  --destructive: hsl(0 84% 60%);
+  --destructive-foreground: hsl(0 0% 98%);
+  --border: hsl(234 16% 15%);
+  --input: hsl(234 16% 15%);
+  --ring: hsl(256 80% 60%);
+  --chart-1: hsl(256 80% 60%);
+  --chart-2: hsl(171 77% 44%);
+  --chart-3: hsl(48 96% 53%);
+  --chart-4: hsl(142 76% 36%);
+  --chart-5: hsl(339 82% 52%);
+  --sidebar: hsl(234 16% 6%);
+  --sidebar-foreground: hsl(220 14% 96%);
+  --sidebar-primary: hsl(256 80% 60%);
+  --sidebar-primary-foreground: hsl(0 0% 100%);
+  --sidebar-accent: hsl(234 16% 10%);
+  --sidebar-accent-foreground: hsl(220 14% 96%);
+  --sidebar-border: hsl(234 16% 15%);
+  --sidebar-ring: hsl(256 80% 60%);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Enhanced Animations */
+.fade-in {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(20px);
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0);
+  }
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.4s ease-out forwards;
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.scale-in {
+  animation: scaleIn 0.3s ease-out forwards;
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Enhanced Card Hover Effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform: translateZ(0);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow: 0 20px 25px -5px hsl(256 80% 60% / 0.1), 
+              0 8px 10px -6px hsl(256 80% 60% / 0.1),
+              0 0 0 1px hsl(256 80% 60% / 0.05);
+}
+
+.dark .card-hover:hover {
+  box-shadow: 0 20px 25px -5px hsl(256 80% 60% / 0.2), 
+              0 8px 10px -6px hsl(256 80% 60% / 0.15),
+              0 0 0 1px hsl(256 80% 60% / 0.1);
+}
+
+/* Button Enhancements */
+.btn-gradient {
+  background: linear-gradient(135deg, hsl(256 80% 60%) 0%, hsl(280 80% 65%) 100%);
+  transition: all 0.3s ease;
+}
+
+.btn-gradient:hover {
+  background: linear-gradient(135deg, hsl(256 80% 55%) 0%, hsl(280 80% 60%) 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 20px hsl(256 80% 60% / 0.2);
+}
+
+/* Loading Animations */
+.pulse-slow {
+  animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)) 0%,
+    hsl(var(--muted) / 0.8) 50%,
+    hsl(var(--muted)) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Staggered Animations */
+.stagger-animation > * {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.stagger-animation > *:nth-child(1) { animation-delay: 0.1s; }
+.stagger-animation > *:nth-child(2) { animation-delay: 0.2s; }
+.stagger-animation > *:nth-child(3) { animation-delay: 0.3s; }
+.stagger-animation > *:nth-child(4) { animation-delay: 0.4s; }
+.stagger-animation > *:nth-child(5) { animation-delay: 0.5s; }
+.stagger-animation > *:nth-child(6) { animation-delay: 0.6s; }
+
+/* Improved Focus States */
+.focus-visible:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+  border-radius: var(--radius);
+}
+
+/* Custom Scrollbars */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: hsl(var(--muted) / 0.1);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+/* Typography Enhancements */
+.text-gradient {
+  background: linear-gradient(135deg, hsl(256 80% 60%) 0%, hsl(280 80% 65%) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Interactive Elements */
+.interactive {
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.interactive:hover {
+  transform: translateY(-1px);
+}
+
+.interactive:active {
+  transform: translateY(0);
+}
+
+/* Glass Effect */
+.glass-effect {
+  background: hsl(var(--background) / 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--border) / 0.5);
+}
+
+/* Floating Action Button */
+.fab {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  z-index: 50;
+  border-radius: 50%;
+  width: 56px;
+  height: 56px;
+  box-shadow: 0 8px 16px hsl(256 80% 60% / 0.3);
+  transition: all 0.3s ease;
+}
+
+.fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 12px 24px hsl(256 80% 60% / 0.4);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .card-hover:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .card-hover:active {
+    transform: scale(0.98);
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

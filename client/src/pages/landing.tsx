@@ -14,12 +14,15 @@ export default function Landing() {
       <main className="relative">
         {/* Decorative background */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
+          {/* Dot grid background */}
+          <div className="dot-grid absolute inset-0" />
+          {/* Soft blobs for depth */}
           <div className="absolute -top-24 left-1/2 -translate-x-1/2 h-[28rem] w-[28rem] rounded-full bg-primary/10 blur-3xl" />
           <div className="absolute bottom-0 right-0 h-[18rem] w-[18rem] rounded-full bg-muted/40 blur-2xl" />
         </div>
 
         {/* Hero */}
-        <section className="relative z-10 min-h-[calc(100vh-4rem)] flex items-center justify-center px-6">
+        <section className="relative z-10 min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 sm:px-6 pt-12 pb-28 lg:pt-0 lg:pb-0">
           <div className="max-w-5xl mx-auto text-center">
             <TypingBadge
               className="mb-6"

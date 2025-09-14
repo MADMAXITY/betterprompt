@@ -65,7 +65,8 @@ export default function NavigationBar() {
             </Link>
             <Button 
               asChild 
-              className="bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
+              size="sm"
+              className="h-9 px-3 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-colors"
               data-testid="button-new-prompt"
             >
               <Link href="/ai-builder">
@@ -137,7 +138,8 @@ export default function NavigationBar() {
               </Link>
               <Button 
                 asChild 
-                className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
+                size="sm"
+                className="w-full h-9 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-colors"
                 onClick={() => setIsMobileMenuOpen(false)}
                 data-testid="button-mobile-new-prompt"
               >

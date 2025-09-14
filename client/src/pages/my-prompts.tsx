@@ -256,7 +256,7 @@ export default function MyPrompts() {
           totalCount={getTotalCount()}
         />
 
-        <div className="p-6 pb-20 lg:pb-6" data-testid="main-content">
+        <div className="p-6 pb-28 lg:pb-6" data-testid="main-content">
           <div className="fade-in">
             <div className="flex items-center justify-between mb-6">
               <div>

@@ -153,7 +153,7 @@ export default function Home() {
             totalCount={filteredPrompts.length}
           />
 
-          <div className="p-6 pb-20 lg:pb-6" data-testid="main-content">
+          <div className="p-6 pb-28 lg:pb-6" data-testid="main-content">
             <div className="fade-in">
               <div className="flex items-center justify-between mb-6">
                 <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">

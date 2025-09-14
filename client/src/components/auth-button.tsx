@@ -14,9 +14,10 @@ export default function AuthButton() {
     return (
       <Button
         onClick={signInWithGoogle}
-        className="rounded-full px-4 font-medium bg-gradient-to-r from-primary to-indigo-600 text-primary-foreground shadow hover:shadow-md transition"
+        size="sm"
+        className="inline-flex items-center gap-2 h-9 px-3 rounded-full font-medium bg-primary text-primary-foreground shadow-sm hover:bg-primary/90 transition-colors"
       >
-        <i className="fab fa-google mr-2"></i>
+        <i className="fab fa-google"></i>
         <span className="hidden sm:inline">Sign in</span>
         <span className="sm:hidden">Login</span>
       </Button>

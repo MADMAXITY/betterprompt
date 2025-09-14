@@ -258,7 +258,7 @@ export default function AIBuilder() {
     <div className="min-h-screen bg-background">
       <NavigationBar />
       
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-28 lg:pb-6">
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
@@ -274,12 +274,12 @@ export default function AIBuilder() {
             </div>
             
             {/* Builder Mode Switcher */}
-            <div className="flex bg-muted rounded-lg p-1">
+            <div className="flex bg-muted rounded-lg p-1 overflow-x-auto no-scrollbar max-w-full gap-1">
               <Button
                 variant={builderMode === 'simple' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setBuilderMode('simple')}
-                className="rounded-md"
+                className="rounded-md shrink-0"
                 data-testid="button-simple-mode"
               >
                 <i className="fas fa-bolt mr-2"></i>Quick Build
@@ -288,7 +288,7 @@ export default function AIBuilder() {
                 variant={builderMode === 'chat' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setBuilderMode('chat')}
-                className="rounded-md"
+                className="rounded-md shrink-0"
                 data-testid="button-chat-mode"
               >
                 <i className="fas fa-comments mr-2"></i>Chat
@@ -297,7 +297,7 @@ export default function AIBuilder() {
                 variant={builderMode === 'wizard' ? 'default' : 'ghost'}
                 size="sm"
                 onClick={() => setBuilderMode('wizard')}
-                className="rounded-md"
+                className="rounded-md shrink-0"
                 data-testid="button-wizard-mode"
               >
                 <i className="fas fa-magic mr-2"></i>Wizard

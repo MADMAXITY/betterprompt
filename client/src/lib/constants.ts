@@ -15,7 +15,7 @@ export const CATEGORY_COLORS = {
 } as const;
 
 export const CATEGORY_ICONS = {
-  [CATEGORIES.WRITING]: "fas fa-pen-nib",
+  [CATEGORIES.WRITING]: "fas fa-pen",
   [CATEGORIES.CODING]: "fas fa-code",
   [CATEGORIES.MARKETING]: "fas fa-bullhorn",
   [CATEGORIES.BUSINESS]: "fas fa-briefcase", 

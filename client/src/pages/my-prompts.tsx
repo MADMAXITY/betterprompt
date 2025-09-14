@@ -227,7 +227,7 @@ export default function MyPrompts() {
                   className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                   data-testid="tab-created"
                 >
-                  <i className="fas fa-wand-magic-sparkles mr-2"></i>
+                  <i className="fas fa-magic mr-2"></i>
                   My Creations ({userPrompts.length})
                 </TabsTrigger>
               </TabsList>

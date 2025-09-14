@@ -1,9 +1,28 @@
 import OpenAI from "openai";
 
-// the newest OpenAI model is "gpt-5" which was released August 7, 2025. do not change this unless explicitly requested by the user
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "default_key"
+// Model and sampling config
+const DEFAULT_MODEL = process.env.OPENAI_MODEL || "gpt-5-mini"; // requested by user
+const RAW_TEMPERATURE = process.env.OPENAI_TEMPERATURE;
+const TEMPERATURE = RAW_TEMPERATURE !== undefined && RAW_TEMPERATURE !== ""
+  ? Number(RAW_TEMPERATURE)
+  : undefined;
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "default_key",
 });
+
+async function createJsonChatCompletion(messages: Array<{ role: string; content: string }>) {
+  const params: any = {
+    model: DEFAULT_MODEL,
+    messages,
+    response_format: { type: "json_object" },
+  };
+  // Only set temperature if provided; some models restrict accepted values
+  if (typeof TEMPERATURE === "number" && Number.isFinite(TEMPERATURE)) {
+    params.temperature = TEMPERATURE;
+  }
+  return openai.chat.completions.create(params);
+}
 
 export interface PromptGenerationRequest {
   goal: string;
@@ -60,18 +79,13 @@ Additional context:
 
 Create a comprehensive, reusable prompt that achieves this goal effectively.`;
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-5",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        response_format: { type: "json_object" },
-        temperature: 0.7,
-        max_tokens: 1500
-      });
+      const response = await createJsonChatCompletion([
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ]);
 
-      const result = JSON.parse(response.choices[0].message.content || "{}");
+      const content = response.choices?.[0]?.message?.content ?? "{}";
+      const result = JSON.parse(content);
       
       return {
         title: result.title || "Generated Prompt",
@@ -108,18 +122,13 @@ Refinement goal: ${request.refinementGoal}
 
 Please refine this prompt to better achieve the stated goal.`;
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-5",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
-        ],
-        response_format: { type: "json_object" },
-        temperature: 0.3,
-        max_tokens: 1500
-      });
+      const response = await createJsonChatCompletion([
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ]);
 
-      const result = JSON.parse(response.choices[0].message.content || "{}");
+      const content = response.choices?.[0]?.message?.content ?? "{}";
+      const result = JSON.parse(content);
       
       return {
         refinedPrompt: result.refinedPrompt || request.originalPrompt,
@@ -139,18 +148,13 @@ Respond with JSON in this format:
   "suggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 3"]
 }`;
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-5",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: `Analyze this prompt and suggest improvements:\n\n${currentPrompt}` }
-        ],
-        response_format: { type: "json_object" },
-        temperature: 0.5,
-        max_tokens: 500
-      });
+      const response = await createJsonChatCompletion([
+        { role: "system", content: systemPrompt },
+        { role: "user", content: `Analyze this prompt and suggest improvements:\n\n${currentPrompt}` },
+      ]);
 
-      const result = JSON.parse(response.choices[0].message.content || "{}");
+      const content = response.choices?.[0]?.message?.content ?? "{}";
+      const result = JSON.parse(content);
       return result.suggestions || [];
     } catch (error) {
       console.error("Failed to generate suggestions:", error);
@@ -200,18 +204,13 @@ For final completion:
 
 Keep the conversation natural, friendly, and focused. Ask one key question at a time.`;
 
-      const response = await openai.chat.completions.create({
-        model: "gpt-5",
-        messages: [
-          { role: "system", content: systemPrompt },
-          ...messages
-        ],
-        response_format: { type: "json_object" },
-        temperature: 0.7,
-        max_tokens: 800
-      });
+      const response = await createJsonChatCompletion([
+        { role: "system", content: systemPrompt },
+        ...messages,
+      ]);
 
-      const result = JSON.parse(response.choices[0].message.content || "{}");
+      const content = response.choices?.[0]?.message?.content ?? "{}";
+      const result = JSON.parse(content);
       
       return {
         message: result.message || "I'd be happy to help you create a great prompt! What would you like to accomplish?",

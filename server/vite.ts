@@ -41,6 +41,15 @@ export async function setupVite(app: Express, server: Server) {
   });
 
   app.use(vite.middlewares);
+  // Serve favicon located at project root in development
+  app.get("/fav.png", (_req, res) => {
+    const file = path.resolve(import.meta.dirname, "..", "fav.png");
+    if (fs.existsSync(file)) {
+      res.sendFile(file);
+    } else {
+      res.status(404).end();
+    }
+  });
   app.use("*", async (req, res, next) => {
     const url = req.originalUrl;
 

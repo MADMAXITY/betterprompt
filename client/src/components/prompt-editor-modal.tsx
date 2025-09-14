@@ -62,12 +62,23 @@ export default function PromptEditorModal({
 
   const getCategoryColor = (categoryName: string) => {
     switch (categoryName.toLowerCase()) {
-      case "writing": return "bg-primary/10 text-primary";
-      case "coding": return "bg-green-500/10 text-green-600 dark:text-green-400";
-      case "marketing": return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
-      case "business": return "bg-orange-500/10 text-orange-600 dark:text-orange-400";
-      case "education": return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
+      case "writing": return "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground";
+      case "coding": return "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-300";
+      case "marketing": return "bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300";
+      case "business": return "bg-orange-500/10 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300";
+      case "education": return "bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300";
       default: return "bg-muted/50 text-muted-foreground";
+    }
+  };
+
+  const getCategoryIcon = (categoryName: string) => {
+    switch (categoryName.toLowerCase()) {
+      case "writing": return "fas fa-pen";
+      case "coding": return "fas fa-code";
+      case "marketing": return "fas fa-bullhorn";
+      case "business": return "fas fa-briefcase";
+      case "education": return "fas fa-graduation-cap";
+      default: return "fas fa-tag";
     }
   };
 
@@ -133,6 +144,7 @@ export default function PromptEditorModal({
               {prompt.title}
             </DialogTitle>
             <Badge className={getCategoryColor(prompt.category.name)}>
+              <i className={`${getCategoryIcon(prompt.category.name)} mr-1.5`}></i>
               {prompt.category.name}
             </Badge>
           </div>
@@ -152,7 +164,7 @@ export default function PromptEditorModal({
               className="text-primary hover:text-primary/80 border-primary/20"
               data-testid="button-edit-ai"
             >
-              <i className="fas fa-wand-magic-sparkles mr-1"></i>Edit with AI
+              <i className="fas fa-magic mr-1"></i>Edit with AI
             </Button>
             <Button 
               variant="outline" 
@@ -181,7 +193,7 @@ export default function PromptEditorModal({
                   className="text-primary hover:text-primary/80 p-0 h-auto"
                   data-testid="button-ai-suggestions"
                 >
-                  <i className={`fas ${suggestionsQuery.isPending ? 'fa-spinner fa-spin' : 'fa-wand-magic-sparkles'} mr-1`}></i>
+                  <i className={`fas ${suggestionsQuery.isPending ? 'fa-spinner fa-spin' : 'fa-magic'} mr-1`}></i>
                   AI Suggestions
                 </Button>
                 <span>•</span>

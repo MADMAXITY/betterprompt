@@ -20,12 +20,25 @@ export default function PromptCard({ prompt, onClick, onSaveToggle, onEditWithAI
 
   const getCategoryColor = (categoryName: string) => {
     switch (categoryName.toLowerCase()) {
-      case "writing": return "bg-primary/10 text-primary";
-      case "coding": return "bg-green-500/10 text-green-600 dark:text-green-400";
-      case "marketing": return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
-      case "business": return "bg-orange-500/10 text-orange-600 dark:text-orange-400";
-      case "education": return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
+      case "writing": return "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground";
+      case "coding": return "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-300";
+      case "marketing": return "bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300";
+      case "business": return "bg-orange-500/10 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300";
+      case "education": return "bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300";
       default: return "bg-muted/50 text-muted-foreground";
+    }
+  };
+
+  const getCategoryIcon = (categoryName: string) => {
+    switch (categoryName.toLowerCase()) {
+      case "writing": return "fas fa-pen";
+      case "coding": return "fas fa-code";
+      case "marketing": return "fas fa-bullhorn";
+      case "business": return "fas fa-briefcase";
+      case "education": return "fas fa-graduation-cap";
+      case "productivity": return "fas fa-tasks";
+      case "creative": return "fas fa-palette";
+      default: return "fas fa-tag";
     }
   };
 
@@ -69,6 +82,7 @@ export default function PromptCard({ prompt, onClick, onSaveToggle, onEditWithAI
         <div className="flex items-start justify-between mb-3">
           <div className="flex items-center space-x-2">
             <Badge className={getCategoryColor(prompt.category.name)}>
+              <i className={`${getCategoryIcon(prompt.category.name)} mr-1.5`}></i>
               {prompt.category.name}
             </Badge>
             {prompt.isFeatured && (
@@ -109,7 +123,7 @@ export default function PromptCard({ prompt, onClick, onSaveToggle, onEditWithAI
             className="text-primary hover:text-primary/80 border-primary/20 hover:border-primary/40"
             data-testid={`button-edit-ai-${prompt.id}`}
           >
-            <i className="fas fa-wand-magic-sparkles mr-2"></i>
+            <i className="fas fa-magic mr-2"></i>
             Edit with AI
           </Button>
         </div>

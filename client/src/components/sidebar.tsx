@@ -79,7 +79,7 @@ export default function Sidebar({
                 className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-medium"
                 data-testid="button-generate-prompt"
               >
-                <i className={`fas ${isGenerating ? 'fa-spinner fa-spin' : 'fa-wand-magic-sparkles'} mr-2`}></i>
+                <i className={`fas ${isGenerating ? 'fa-spinner fa-spin' : 'fa-magic'} mr-2`}></i>
                 {isGenerating ? "Generating..." : "Generate Prompt"}
               </Button>
             </CardContent>
@@ -98,10 +98,10 @@ export default function Sidebar({
               onClick={() => onCategorySelect(undefined)}
               data-testid="button-category-all"
             >
-              <div className="flex items-center space-x-3">
-                <i className="fas fa-grid-2 text-primary w-4"></i>
-                <span className="text-foreground">All Categories</span>
-              </div>
+                <div className="flex items-center space-x-3">
+                  <i className="fas fa-th-large text-primary w-4"></i>
+                  <span className="text-foreground">All Categories</span>
+                </div>
               <Badge variant="secondary" className="text-xs">
                 {allPrompts.length}
               </Badge>

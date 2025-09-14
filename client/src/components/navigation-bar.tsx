@@ -1,5 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
+import ThemeToggle from "@/components/theme-toggle";
 import { useState } from "react";
 
 export default function NavigationBar() {
@@ -66,10 +67,15 @@ export default function NavigationBar() {
                 <i className="fas fa-plus mr-2"></i>New Prompt
               </Link>
             </Button>
+
+            {/* Theme toggle */}
+            <ThemeToggle />
           </div>
 
           {/* Mobile Menu Button */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            {/* Mobile theme toggle */}
+            <ThemeToggle />
             <Button
               variant="ghost"
               size="icon"

@@ -144,7 +144,10 @@ export default function Home() {
           <div className="p-6 pb-20 lg:pb-6" data-testid="main-content">
             <div className="fade-in">
               <div className="flex items-center justify-between mb-6">
-                <h1 className="text-2xl font-bold text-foreground">Prompt Library</h1>
+                <h1 className="text-2xl font-bold text-foreground flex items-center gap-2">
+                  <i className="fas fa-book-open text-primary"></i>
+                  <span>Prompt Library</span>
+                </h1>
                 <div className="hidden lg:flex items-center space-x-2 text-sm text-muted-foreground">
                   <span data-testid="text-total-prompts">{allPrompts.length} prompts</span>
                   <span>•</span>
@@ -155,7 +158,10 @@ export default function Home() {
               {/* Featured Prompts */}
               {!searchQuery && !selectedCategory && featuredPrompts.length > 0 && (
                 <div className="mb-8">
-                  <h2 className="text-lg font-semibold text-foreground mb-4">Featured Prompts</h2>
+                  <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                    <i className="fas fa-star text-yellow-400"></i>
+                    <span>Featured Prompts</span>
+                  </h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {featuredPrompts.map((prompt) => (
                       <PromptCard
@@ -172,7 +178,8 @@ export default function Home() {
 
               {/* All Prompts */}
               <div>
-                <h2 className="text-lg font-semibold text-foreground mb-4">
+                <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <i className="fas fa-list"></i>
                   {searchQuery || selectedCategory ? "Search Results" : "All Prompts"}
                 </h2>
                 

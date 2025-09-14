@@ -234,12 +234,23 @@ export default function AIBuilder() {
 
   const getCategoryColor = (categoryName: string) => {
     switch (categoryName.toLowerCase()) {
-      case "writing": return "bg-primary/10 text-primary";
-      case "coding": return "bg-green-500/10 text-green-600 dark:text-green-400";
-      case "marketing": return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
-      case "business": return "bg-orange-500/10 text-orange-600 dark:text-orange-400";
-      case "education": return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
+      case "writing": return "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground";
+      case "coding": return "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-300";
+      case "marketing": return "bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300";
+      case "business": return "bg-orange-500/10 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300";
+      case "education": return "bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300";
       default: return "bg-muted/50 text-muted-foreground";
+    }
+  };
+
+  const getCategoryIcon = (categoryName: string) => {
+    switch (categoryName.toLowerCase()) {
+      case "writing": return "fas fa-pen";
+      case "coding": return "fas fa-code";
+      case "marketing": return "fas fa-bullhorn";
+      case "business": return "fas fa-briefcase";
+      case "education": return "fas fa-graduation-cap";
+      default: return "fas fa-tag";
     }
   };
 
@@ -308,7 +319,7 @@ export default function AIBuilder() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <i className="fas fa-wand-magic-sparkles text-primary"></i>
+                  <i className="fas fa-magic text-primary"></i>
                   <span>Prompt Configuration</span>
                 </CardTitle>
               </CardHeader>
@@ -397,7 +408,7 @@ export default function AIBuilder() {
                   size="lg"
                   data-testid="button-generate"
                 >
-                  <i className={`fas ${generateMutation.isPending ? 'fa-spinner fa-spin' : 'fa-wand-magic-sparkles'} mr-2`}></i>
+                  <i className={`fas ${generateMutation.isPending ? 'fa-spinner fa-spin' : 'fa-magic'} mr-2`}></i>
                   {generateMutation.isPending ? "Generating..." : "Generate Prompt"}
                 </Button>
               </CardContent>
@@ -481,6 +492,7 @@ export default function AIBuilder() {
                         <span>Generated Prompt</span>
                       </CardTitle>
                       <Badge className={getCategoryColor(generatedPrompt.suggestedCategory)}>
+                        <i className={`${getCategoryIcon(generatedPrompt.suggestedCategory)} mr-1.5`}></i>
                         {generatedPrompt.suggestedCategory}
                       </Badge>
                     </div>
@@ -548,7 +560,7 @@ export default function AIBuilder() {
             ) : (
               <Card className="h-full">
                 <CardContent className="flex flex-col items-center justify-center h-[600px] text-center">
-                  <i className="fas fa-wand-magic-sparkles text-6xl text-muted-foreground mb-4"></i>
+                  <i className="fas fa-magic text-6xl text-muted-foreground mb-4"></i>
                   <h3 className="text-lg font-medium text-foreground mb-2">
                     AI Prompt Builder Ready
                   </h3>

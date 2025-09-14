@@ -774,7 +774,7 @@ export default function WizardBuilder({ onComplete }: WizardBuilderProps) {
                 className="bg-primary text-primary-foreground hover:bg-primary/90"
                 data-testid="wizard-generate"
               >
-                <i className={`fas ${generateMutation.isPending ? 'fa-spinner fa-spin' : 'fa-wand-magic-sparkles'} mr-2`}></i>
+                <i className={`fas ${generateMutation.isPending ? 'fa-spinner fa-spin' : 'fa-magic'} mr-2`}></i>
                 {generateMutation.isPending ? 'Generating...' : 'Generate Prompt'}
               </Button>
             ) : (

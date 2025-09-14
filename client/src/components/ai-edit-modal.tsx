@@ -53,14 +53,27 @@ export default function AIEditModal({
 
   const getCategoryColor = (categoryName: string) => {
     switch (categoryName.toLowerCase()) {
-      case "writing": return "bg-primary/10 text-primary";
-      case "coding": return "bg-green-500/10 text-green-600 dark:text-green-400";
-      case "marketing": return "bg-blue-500/10 text-blue-600 dark:text-blue-400";
-      case "business": return "bg-orange-500/10 text-orange-600 dark:text-orange-400";
-      case "education": return "bg-purple-500/10 text-purple-600 dark:text-purple-400";
+      case "writing": return "bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary-foreground";
+      case "coding": return "bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-300";
+      case "marketing": return "bg-blue-500/10 text-blue-600 dark:bg-blue-500/20 dark:text-blue-300";
+      case "business": return "bg-orange-500/10 text-orange-600 dark:bg-orange-500/20 dark:text-orange-300";
+      case "education": return "bg-purple-500/10 text-purple-600 dark:bg-purple-500/20 dark:text-purple-300";
       case "productivity": return "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400";
       case "creative": return "bg-pink-500/10 text-pink-600 dark:text-pink-400";
       default: return "bg-muted/50 text-muted-foreground";
+    }
+  };
+
+  const getCategoryIcon = (categoryName: string) => {
+    switch (categoryName.toLowerCase()) {
+      case "writing": return "fas fa-pen";
+      case "coding": return "fas fa-code";
+      case "marketing": return "fas fa-bullhorn";
+      case "business": return "fas fa-briefcase";
+      case "education": return "fas fa-graduation-cap";
+      case "productivity": return "fas fa-tasks";
+      case "creative": return "fas fa-palette";
+      default: return "fas fa-tag";
     }
   };
 
@@ -90,6 +103,7 @@ export default function AIEditModal({
               Edit with AI
             </DialogTitle>
             <Badge className={getCategoryColor(prompt.category.name)}>
+              <i className={`${getCategoryIcon(prompt.category.name)} mr-1.5`}></i>
               {prompt.category.name}
             </Badge>
           </div>
@@ -181,7 +195,7 @@ export default function AIEditModal({
                 </>
               ) : (
                 <>
-                  <i className="fas fa-wand-magic-sparkles mr-2"></i>
+                  <i className="fas fa-magic mr-2"></i>
                   Edit with AI
                 </>
               )}

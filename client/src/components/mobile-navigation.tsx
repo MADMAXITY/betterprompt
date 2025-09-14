@@ -32,7 +32,7 @@ export default function MobileNavigation() {
           data-testid="button-mobile-nav-ai-builder"
         >
           <Link href="/ai-builder">
-            <i className="fas fa-wand-magic-sparkles text-lg"></i>
+            <i className="fas fa-magic text-lg"></i>
             <span className="text-xs mt-1">AI Builder</span>
           </Link>
         </Button>

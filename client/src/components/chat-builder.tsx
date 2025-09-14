@@ -275,7 +275,7 @@ export function ChatBuilder({ onComplete }: ChatBuilderProps) {
             <Card>
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <i className="fas fa-sparkles text-primary"></i>
+                  <i className="fas fa-magic text-primary"></i>
                   <CardTitle>Your Custom Prompt</CardTitle>
                 </div>
               </CardHeader>

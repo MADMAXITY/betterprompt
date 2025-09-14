@@ -1,5 +1,6 @@
 import { type User, type InsertUser, type Category, type InsertCategory, type Prompt, type InsertPrompt, type SavedPrompt, type InsertSavedPrompt, type PromptWithCategory } from "@shared/schema";
 import { randomUUID } from "crypto";
+import { seededCategories, seededPrompts } from "./default-data";
 
 export interface IStorage {
   // User methods
@@ -54,6 +55,15 @@ export class MemStorage implements IStorage {
 
   private initializeDefaultData() {
     if (this.seeded && this.categories.size > 0 && this.prompts.size > 0) return;
+    // In Vercel serverless, prefer stable seeded data to ensure availability
+    if (process.env.VERCEL) {
+      this.categories.clear();
+      this.prompts.clear();
+      seededCategories.forEach((c) => this.categories.set(c.id, c));
+      seededPrompts.forEach((p) => this.prompts.set(p.id, p));
+      this.seeded = true;
+      return;
+    }
     // Create default categories
     const defaultCategories: Category[] = [
       { id: randomUUID(), name: "Writing", icon: "fas fa-pen-nib", color: "primary", description: "Content creation and copywriting prompts" },

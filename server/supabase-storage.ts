@@ -9,7 +9,7 @@ import type {
   SavedPrompt,
   InsertSavedPrompt,
   PromptWithCategory,
-} from "@shared/schema";
+} from "../shared/schema";
 import { seededCategories, seededPrompts } from "./default-data";
 
 type DbPrompt = Omit<Prompt, "createdAt" | "updatedAt"> & {

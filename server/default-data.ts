@@ -1,4 +1,4 @@
-import { type Category, type Prompt } from "@shared/schema";
+import { type Category, type Prompt } from "../shared/schema";
 
 // Stable seeded data for serverless environments.
 export const seededCategories: Category[] = [
@@ -90,4 +90,3 @@ export const seededPrompts: Prompt[] = [
     updatedAt: new Date(Date.now() - 3 * 60 * 60 * 1000),
   },
 ];
-

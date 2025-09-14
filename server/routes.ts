@@ -1,11 +1,10 @@
 import type { Express } from "express";
-import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { aiService } from "./services/ai-service";
-import { insertPromptSchema, insertCategorySchema } from "@shared/schema";
+import { insertPromptSchema, insertCategorySchema } from "../shared/schema";
 import { z } from "zod";
 
-export async function registerRoutes(app: Express): Promise<Server> {
+export function registerRoutes(app: Express): void {
   // Health + diagnostics
   app.get("/api/health", async (_req, res) => {
     try {
@@ -271,6 +270,5 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  const httpServer = createServer(app);
-  return httpServer;
+  // No return; routes are attached to provided app
 }

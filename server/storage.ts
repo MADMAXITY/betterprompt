@@ -1,4 +1,4 @@
-import { type User, type InsertUser, type Category, type InsertCategory, type Prompt, type InsertPrompt, type SavedPrompt, type InsertSavedPrompt, type PromptWithCategory } from "@shared/schema";
+import { type User, type InsertUser, type Category, type InsertCategory, type Prompt, type InsertPrompt, type SavedPrompt, type InsertSavedPrompt, type PromptWithCategory } from "../shared/schema";
 import { randomUUID } from "crypto";
 import { seededCategories, seededPrompts } from "./default-data";
 

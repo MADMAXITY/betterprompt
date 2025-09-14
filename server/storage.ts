@@ -2783,4 +2783,9 @@ Create memorable moments that make players excited for the next session while ad
   }
 }
 
-export const storage = new MemStorage();
+import { SupabaseStorage } from "./supabase-storage";
+
+export const storage: IStorage =
+  process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY
+    ? new SupabaseStorage()
+    : new MemStorage();

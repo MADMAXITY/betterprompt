@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/auth/callback", "destination": "/" },
+    { "source": "/library", "destination": "/" },
+    { "source": "/my-prompts", "destination": "/" },
+    { "source": "/ai-builder", "destination": "/" }
+  ]
+}
+

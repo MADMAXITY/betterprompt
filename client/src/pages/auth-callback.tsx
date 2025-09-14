@@ -10,8 +10,14 @@ export default function AuthCallback() {
     (async () => {
       try {
         if (!supabase) return navigate("/library");
-        // Exchange OAuth code for session (PKCE)
-        await supabase.auth.exchangeCodeForSession(window.location.href);
+        const url = window.location.href;
+        if (url.includes("#access_token=") || url.includes("#id_token=")) {
+          // Implicit hash flow: trigger session bootstrap
+          await supabase.auth.getSession();
+        } else if (url.includes("code=")) {
+          // PKCE code flow
+          await supabase.auth.exchangeCodeForSession(url);
+        }
       } catch {
         // ignore
       } finally {
@@ -32,4 +38,3 @@ export default function AuthCallback() {
     </div>
   );
 }
-

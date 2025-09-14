@@ -76,8 +76,8 @@ export class SupabaseStorage {
           is_featured: p.isFeatured,
           views: p.views,
           likes: p.likes,
-          created_at: p.createdAt.toISOString(),
-          updated_at: p.updatedAt.toISOString(),
+          created_at: (p.createdAt ?? new Date()).toISOString(),
+          updated_at: (p.updatedAt ?? new Date()).toISOString(),
         })),
         { onConflict: "id" },
       );

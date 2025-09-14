@@ -1,10 +1,31 @@
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 import { storage } from "./storage";
 import { aiService } from "./services/ai-service";
 import { insertPromptSchema, insertCategorySchema } from "../shared/schema";
+import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
 export function registerRoutes(app: Express): void {
+  // Auth middleware for routes needing Supabase user
+  async function requireAuth(req: Request, res: Response, next: NextFunction) {
+    try {
+      const auth = req.headers["authorization"] || req.headers["Authorization"];
+      if (!auth || Array.isArray(auth)) return res.status(401).json({ message: "Unauthorized" });
+      const token = (auth as string).startsWith("Bearer ") ? (auth as string).slice(7) : undefined;
+      if (!token) return res.status(401).json({ message: "Unauthorized" });
+
+      const SUPABASE_URL = process.env.SUPABASE_URL;
+      const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+      if (!SUPABASE_URL || !SUPABASE_KEY) return res.status(500).json({ message: "Auth not configured" });
+      const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+      const { data, error } = await supabase.auth.getUser(token);
+      if (error || !data?.user) return res.status(401).json({ message: "Invalid token" });
+      (req as any).userId = data.user.id;
+      next();
+    } catch (e) {
+      res.status(401).json({ message: "Unauthorized" });
+    }
+  }
   // Health + diagnostics
   app.get("/api/health", async (_req, res) => {
     try {
@@ -233,24 +254,28 @@ export function registerRoutes(app: Express): void {
   });
 
   // Saved prompts routes (for future user system)
-  app.get("/api/saved-prompts/:userId", async (req, res) => {
+  // Saved prompts routes (require auth)
+  app.get("/api/saved-prompts", requireAuth, async (req, res) => {
     try {
-      const prompts = await storage.getSavedPrompts(req.params.userId);
+      const userId = (req as any).userId as string;
+      const prompts = await storage.getSavedPrompts(userId);
       res.json(prompts);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch saved prompts" });
     }
   });
 
-  app.post("/api/saved-prompts", async (req, res) => {
+  app.post("/api/saved-prompts", requireAuth, async (req, res) => {
     try {
-      const schema = z.object({
-        promptId: z.string(),
-        userId: z.string()
-      });
-
+      const schema = z.object({ promptId: z.string() });
       const validatedData = schema.parse(req.body);
-      const savedPrompt = await storage.savePrompt(validatedData);
+      const userId = (req as any).userId as string;
+      // Prevent duplicates
+      const already = await storage.isPromptSaved(validatedData.promptId, userId);
+      if (already) {
+        return res.status(200).json({ message: "Already saved" });
+      }
+      const savedPrompt = await storage.savePrompt({ promptId: validatedData.promptId, userId });
       res.status(201).json(savedPrompt);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -261,9 +286,10 @@ export function registerRoutes(app: Express): void {
     }
   });
 
-  app.delete("/api/saved-prompts/:promptId/:userId", async (req, res) => {
+  app.delete("/api/saved-prompts/:promptId", requireAuth, async (req, res) => {
     try {
-      await storage.unsavePrompt(req.params.promptId, req.params.userId);
+      const userId = (req as any).userId as string;
+      await storage.unsavePrompt(req.params.promptId, userId);
       res.json({ message: "Prompt unsaved successfully" });
     } catch (error) {
       res.status(500).json({ message: "Failed to unsave prompt" });

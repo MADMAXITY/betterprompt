@@ -12,6 +12,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { useAuth } from "@/context/AuthContext";
+import { getSavedPrompts as apiGetSavedPrompts } from "@/lib/api";
 
 export default function Home() {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
@@ -23,6 +25,15 @@ export default function Home() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  // Saved prompts for logged-in users (to color bookmarks and prevent duplicates)
+  const { data: savedPromptsServer = [] } = useQuery<PromptWithCategory[]>({
+    queryKey: ["/api/saved-prompts"],
+    enabled: !!user,
+    queryFn: apiGetSavedPrompts,
+  });
+  const savedIds = useMemo(() => new Set(savedPromptsServer.map((p) => p.id)), [savedPromptsServer]);
 
   // Fetch prompts with filters
   const { data: allPrompts = [], isLoading: isLoadingPrompts } = useQuery<PromptWithCategory[]>({
@@ -98,6 +109,7 @@ export default function Home() {
   const handleSaveToggle = () => {
     // Refresh queries to update counts
     queryClient.invalidateQueries({ queryKey: ["/api/prompts"] });
+    if (user) queryClient.invalidateQueries({ queryKey: ["/api/saved-prompts"] });
   };
 
   const handleEditWithAI = (prompt: PromptWithCategory) => {
@@ -170,6 +182,7 @@ export default function Home() {
                         onClick={() => handlePromptClick(prompt)}
                         onSaveToggle={handleSaveToggle}
                         onEditWithAI={handleEditWithAI}
+                        savedIds={user ? savedIds : undefined}
                       />
                     ))}
                   </div>
@@ -228,6 +241,7 @@ export default function Home() {
                         onClick={() => handlePromptClick(prompt)}
                         onSaveToggle={handleSaveToggle}
                         onEditWithAI={handleEditWithAI}
+                        savedIds={user ? savedIds : undefined}
                       />
                     ))}
                   </div>

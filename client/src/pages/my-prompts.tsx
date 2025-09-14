@@ -3,6 +3,7 @@ import NavigationBar from "@/components/navigation-bar";
 import SearchHeader from "@/components/search-header";
 import PromptCard from "@/components/prompt-card";
 import PromptEditorModal from "@/components/prompt-editor-modal";
+import AIEditModal from "@/components/ai-edit-modal";
 import MobileNavigation from "@/components/mobile-navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,18 +14,29 @@ import { localStorageService, type UserPromptData } from "@/lib/local-storage";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
+import { useAuth } from "@/context/AuthContext";
+import { getSavedPrompts as apiGetSavedPrompts, unsavePrompt as apiUnsavePrompt } from "@/lib/api";
 
 export default function MyPrompts() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>();
   const [selectedPrompt, setSelectedPrompt] = useState<PromptWithCategory | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [aiEditPrompt, setAiEditPrompt] = useState<PromptWithCategory | null>(null);
+  const [isAiEditOpen, setIsAiEditOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("saved");
-  const [deletePromptId, setDeletePromptId] = useState<string | null>(null);
+  type DeleteTarget = { id: string; type: 'saved' | 'created' } | null;
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTarget>(null);
   const { toast } = useToast();
 
-  // Get saved prompts from localStorage
-  const savedPromptIds = localStorageService.getSavedPrompts();
+  const { user } = useAuth();
+  // Saved prompts: server if logged in, otherwise fallback to localStorage
+  const savedPromptIds = user ? [] : localStorageService.getSavedPrompts();
+  const { data: serverSavedPrompts = [], refetch: refetchSaved } = useQuery<PromptWithCategory[]>({
+    queryKey: ["/api/saved-prompts"],
+    enabled: !!user,
+    queryFn: apiGetSavedPrompts,
+  });
   const userPrompts = localStorageService.getUserPrompts();
 
   // Fetch actual prompt data for saved prompts
@@ -33,11 +45,12 @@ export default function MyPrompts() {
   });
 
   const savedPrompts = useMemo(() => {
+    if (user) return serverSavedPrompts;
     return savedPromptIds
       .map(saved => allPrompts.find(prompt => prompt.id === saved.id))
       .filter(prompt => prompt !== undefined)
       .map(prompt => prompt!);
-  }, [savedPromptIds, allPrompts]);
+  }, [user, serverSavedPrompts, savedPromptIds, allPrompts]);
 
   // Filter prompts based on search and category
   const filteredSavedPrompts = useMemo(() => {
@@ -82,8 +95,8 @@ export default function MyPrompts() {
   };
 
   const handleSaveToggle = () => {
-    // Force re-render by updating state
-    window.location.reload();
+    // Refresh from server when authed; otherwise rely on local reload
+    if (user) refetchSaved(); else window.location.reload();
   };
 
   const handleDeleteUserPrompt = (promptId: string) => {
@@ -92,7 +105,28 @@ export default function MyPrompts() {
       title: "Prompt deleted",
       description: "Your prompt has been permanently deleted.",
     });
-    setDeletePromptId(null);
+    setDeleteTarget(null);
+  };
+
+  const handleDeleteSavedPrompt = async (promptId: string) => {
+    try {
+      if (user) {
+        await apiUnsavePrompt(promptId);
+        await refetchSaved();
+      } else {
+        localStorageService.unsavePrompt(promptId);
+        window.location.reload();
+      }
+      toast({ title: "Removed", description: "Prompt removed from Saved." });
+    } catch (error) {
+      toast({
+        title: "Action failed",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleteTarget(null);
+    }
   };
 
   const handlePromptSave = (updatedPrompt: PromptWithCategory) => {
@@ -162,25 +196,43 @@ export default function MyPrompts() {
               prompt={prompt}
               onClick={() => handlePromptClick(prompt)}
               onSaveToggle={handleSaveToggle}
+              onEditWithAI={handleEditWithAI}
+              hideSaveToggle
             />
-            {isUserCreated && (
-              <Button
-                variant="destructive"
-                size="icon"
-                className="absolute top-2 right-12 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setDeletePromptId(prompt.id);
-                }}
-                data-testid={`button-delete-${prompt.id}`}
-              >
-                <i className="fas fa-trash text-xs"></i>
-              </Button>
-            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-2 right-2 h-8 w-8 rounded-full text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeleteTarget({ id: prompt.id, type: isUserCreated ? 'created' : 'saved' });
+              }}
+              data-testid={`button-delete-${prompt.id}`}
+              title={isUserCreated ? 'Delete my prompt' : 'Remove from saved'}
+            >
+              <i className="fas fa-trash" />
+            </Button>
           </div>
         ))}
       </div>
     );
+  };
+
+  const handleEditWithAI = (prompt: PromptWithCategory) => {
+    setAiEditPrompt(prompt);
+    setIsAiEditOpen(true);
+  };
+
+  const handleAIEditComplete = (originalPrompt: PromptWithCategory, editedContent: string) => {
+    const editedPrompt = {
+      ...originalPrompt,
+      content: editedContent,
+      title: `${originalPrompt.title} (AI Edited)`
+    };
+    setSelectedPrompt(editedPrompt);
+    setIsEditorOpen(true);
+    setIsAiEditOpen(false);
+    setAiEditPrompt(null);
   };
 
   return (
@@ -292,24 +344,53 @@ export default function MyPrompts() {
         onSave={handlePromptSave}
       />
 
-      <AlertDialog open={!!deletePromptId} onOpenChange={() => setDeletePromptId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Prompt</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this prompt? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel data-testid="button-cancel-delete">Cancel</AlertDialogCancel>
+      <AIEditModal
+        prompt={aiEditPrompt}
+        isOpen={isAiEditOpen}
+        onClose={() => {
+          setIsAiEditOpen(false);
+          setAiEditPrompt(null);
+        }}
+        onEditComplete={handleAIEditComplete}
+      />
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
+        <AlertDialogContent className="w-[min(92vw,520px)] p-0 overflow-hidden rounded-2xl border border-border/70 shadow-xl">
+          <div className="p-6 pb-4">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-destructive/10 text-destructive flex items-center justify-center">
+                <i className="fas fa-exclamation-triangle"></i>
+              </div>
+              <div className="space-y-1.5">
+                <AlertDialogTitle className="text-xl font-semibold tracking-tight">Confirm deletion</AlertDialogTitle>
+                <AlertDialogDescription className="text-sm leading-relaxed text-muted-foreground">
+                  {deleteTarget?.type === 'created'
+                    ? 'This will permanently delete your created prompt.'
+                    : 'This will remove the prompt from your Saved list.'}
+                </AlertDialogDescription>
+              </div>
+            </div>
+          </div>
+          <div className="px-6 pb-6 pt-4 border-t border-border/60 flex items-center justify-end gap-3">
+            <AlertDialogCancel 
+              className="rounded-full px-5 h-10 border border-border/70 bg-transparent hover:bg-muted/40 transition"
+              data-testid="button-cancel-delete"
+            >
+              Cancel
+            </AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deletePromptId && handleDeleteUserPrompt(deletePromptId)}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (!deleteTarget) return;
+                if (deleteTarget.type === 'created') handleDeleteUserPrompt(deleteTarget.id);
+                else handleDeleteSavedPrompt(deleteTarget.id);
+              }}
+              className="rounded-full px-5 h-10 bg-destructive/15 text-destructive border border-destructive/30 hover:bg-destructive/20 hover:border-destructive/40 transition"
               data-testid="button-confirm-delete"
             >
+              <i className="fas fa-trash mr-2"></i>
               Delete
             </AlertDialogAction>
-          </AlertDialogFooter>
+          </div>
         </AlertDialogContent>
       </AlertDialog>
     </div>

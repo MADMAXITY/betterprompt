@@ -1,6 +1,7 @@
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import ThemeToggle from "@/components/theme-toggle";
+import AuthButton from "@/components/auth-button";
 import { useState } from "react";
 
 export default function NavigationBar() {
@@ -68,13 +69,15 @@ export default function NavigationBar() {
               </Link>
             </Button>
 
-            {/* Theme toggle */}
+            {/* Auth + Theme */}
+            <AuthButton />
             <ThemeToggle />
           </div>
 
           {/* Mobile Menu Button */}
           <div className="md:hidden flex items-center gap-2">
-            {/* Mobile theme toggle */}
+            {/* Mobile auth & theme */}
+            <AuthButton />
             <ThemeToggle />
             <Button
               variant="ghost"

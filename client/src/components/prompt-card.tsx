@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { type PromptWithCategory } from "@shared/schema";
 import { localStorageService } from "@/lib/local-storage";
+import { useAuth } from "@/context/AuthContext";
+import { savePrompt as apiSavePrompt, unsavePrompt as apiUnsavePrompt } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
 
@@ -12,11 +14,16 @@ interface PromptCardProps {
   onClick: () => void;
   onSaveToggle?: () => void;
   onEditWithAI?: (prompt: PromptWithCategory) => void;
+  hideSaveToggle?: boolean;
+  savedIds?: Set<string>;
+  onSavedChange?: (id: string, saved: boolean) => void;
 }
 
-export default function PromptCard({ prompt, onClick, onSaveToggle, onEditWithAI }: PromptCardProps) {
-  const [isSaved, setIsSaved] = useState(localStorageService.isPromptSaved(prompt.id));
+export default function PromptCard({ prompt, onClick, onSaveToggle, onEditWithAI, hideSaveToggle, savedIds, onSavedChange }: PromptCardProps) {
+  const initialSaved = savedIds ? savedIds.has(prompt.id) : localStorageService.isPromptSaved(prompt.id);
+  const [isSaved, setIsSaved] = useState(initialSaved);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const getCategoryColor = (categoryName: string) => {
     switch (categoryName.toLowerCase()) {
@@ -42,26 +49,31 @@ export default function PromptCard({ prompt, onClick, onSaveToggle, onEditWithAI
     }
   };
 
-  const handleSaveToggle = (e: React.MouseEvent) => {
+  const handleSaveToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    
-    if (isSaved) {
-      localStorageService.unsavePrompt(prompt.id);
-      setIsSaved(false);
+    try {
+      if (isSaved) {
+        if (user) await apiUnsavePrompt(prompt.id);
+        else localStorageService.unsavePrompt(prompt.id);
+        setIsSaved(false);
+        onSavedChange?.(prompt.id, false);
+        toast({ title: "Prompt removed", description: "Removed from your saved collection." });
+      } else {
+        if (user) await apiSavePrompt(prompt.id);
+        else localStorageService.savePrompt(prompt.id);
+        setIsSaved(true);
+        onSavedChange?.(prompt.id, true);
+        toast({ title: "Prompt saved", description: "Added to your saved collection." });
+      }
+    } catch (err) {
       toast({
-        title: "Prompt removed",
-        description: "Prompt has been removed from your saved collection.",
+        title: "Action failed",
+        description: err instanceof Error ? err.message : "Please try again",
+        variant: "destructive",
       });
-    } else {
-      localStorageService.savePrompt(prompt.id);
-      setIsSaved(true);
-      toast({
-        title: "Prompt saved",
-        description: "Prompt has been added to your saved collection.",
-      });
+    } finally {
+      onSaveToggle?.();
     }
-    
-    onSaveToggle?.();
   };
 
   const formatTimeAgo = (date: Date) => {
@@ -91,15 +103,17 @@ export default function PromptCard({ prompt, onClick, onSaveToggle, onEditWithAI
               </Badge>
             )}
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleSaveToggle}
-            className="text-muted-foreground hover:text-foreground h-6 w-6 -mt-1"
-            data-testid={`button-save-${prompt.id}`}
-          >
-            <i className={`fas fa-bookmark ${isSaved ? 'text-primary' : ''}`}></i>
-          </Button>
+          {!hideSaveToggle && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleSaveToggle}
+              className="text-muted-foreground hover:text-foreground h-6 w-6 -mt-1"
+              data-testid={`button-save-${prompt.id}`}
+            >
+              <i className={`fas fa-bookmark ${isSaved ? 'text-primary' : ''}`}></i>
+            </Button>
+          )}
         </div>
         
         <h3 className="font-semibold text-foreground mb-2" data-testid={`text-title-${prompt.id}`}>

@@ -7,6 +7,7 @@ import Home from "./pages/home";
 import AIBuilder from "./pages/ai-builder";
 import MyPrompts from "./pages/my-prompts";
 import NotFound from "@/pages/not-found";
+import { AuthProvider } from "@/context/AuthContext";
 
 function Router() {
   return (
@@ -22,10 +23,12 @@ function Router() {
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

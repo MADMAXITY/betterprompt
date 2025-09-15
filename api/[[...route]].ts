@@ -2,7 +2,7 @@ export const config = { runtime: "nodejs" };
 
 import { createClient } from "@supabase/supabase-js";
 import { aiJson, readJsonBody, getOpenAIConfig } from "./_env";
-import { seededCategories, seededPrompts } from "../server/default-data";
+
 
 function json(res: any, status: number, body: any) {
   res.statusCode = status;
@@ -28,18 +28,7 @@ function getSupabase() {
   return createClient(SUPABASE_URL, SUPABASE_KEY);
 }
 
-function seedsWithCategory() {
-  return seededPrompts.map((p) => ({
-    ...p,
-    category: seededCategories.find((c) => c.id === p.categoryId) || {
-      id: p.categoryId,
-      name: "General",
-      icon: "fas fa-tag",
-      color: "muted",
-      description: "",
-    },
-  }));
-}
+
 
 async function getUserIdFromAuthHeader(req: any, supabase: any): Promise<string | null> {
   try {

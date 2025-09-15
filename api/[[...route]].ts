@@ -92,20 +92,20 @@ export default async function handler(req: any, res: any) {
     // CATEGORIES
     if (method === "GET" && path === "/api/categories") {
       const supabase = getSupabase();
-      if (!supabase) return ok(res, seededCategories);
+      if (!supabase) return json(res, 503, { message: "Database not configured" });
       try {
         const { data, error } = await supabase.from("categories").select("*").order("name");
-        if (error) return ok(res, seededCategories);
+        if (error) return serverError(res, `Database error: ${error.message}`);
         return ok(res, data || []);
-      } catch {
-        return ok(res, seededCategories);
+      } catch (e: any) {
+        return serverError(res, `Database exception: ${e.message}`);
       }
     }
 
     // PROMPTS LIST
     if (method === "GET" && path === "/api/prompts") {
       const supabase = getSupabase();
-      if (!supabase) return ok(res, seedsWithCategory());
+      if (!supabase) return json(res, 503, { message: "Database not configured" });
       const category = url.searchParams.get("category") || undefined;
       const featured = url.searchParams.get("featured") || undefined;
       const search = url.searchParams.get("search") || undefined;
@@ -118,10 +118,10 @@ export default async function handler(req: any, res: any) {
           query = query.or(`title.ilike.${q},description.ilike.${q},content.ilike.${q}`);
         }
         const { data, error } = await query;
-        if (error) return ok(res, seedsWithCategory());
+        if (error) return serverError(res, `Database error: ${error.message}`);
         return ok(res, data || []);
-      } catch {
-        return ok(res, seedsWithCategory());
+      } catch (e: any) {
+        return serverError(res, `Database exception: ${e.message}`);
       }
     }
 
@@ -130,21 +130,14 @@ export default async function handler(req: any, res: any) {
     if (method === "GET" && promptById) {
       const id = promptById[1];
       const supabase = getSupabase();
-      if (!supabase) {
-        const match = seedsWithCategory().find(p => p.id === id);
-        return match ? ok(res, match) : notFound(res, "Prompt not found");
-      }
+      if (!supabase) return json(res, 503, { message: "Database not configured" });
       try {
         const { data, error } = await supabase.from("prompts").select("*, category:categories(*)").eq("id", id).maybeSingle();
-        if (error) {
-          const match = seedsWithCategory().find(p => p.id === id);
-          return match ? ok(res, match) : notFound(res, "Prompt not found");
-        }
+        if (error) return serverError(res, `Database error: ${error.message}`);
         if (!data) return notFound(res, "Prompt not found");
         return ok(res, data);
-      } catch {
-        const match = seedsWithCategory().find(p => p.id === id);
-        return match ? ok(res, match) : notFound(res, "Prompt not found");
+      } catch (e: any) {
+        return serverError(res, `Database exception: ${e.message}`);
       }
     }
 

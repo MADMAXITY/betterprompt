@@ -1,15 +1,9 @@
 import OpenAI from "openai";
+import { getOpenAIConfig } from "../../api/_env";
 
 // Model and sampling config
-const DEFAULT_MODEL = process.env.OPENAI_MODEL || "gpt-5-mini"; // requested by user
-const RAW_TEMPERATURE = process.env.OPENAI_TEMPERATURE;
-const TEMPERATURE = RAW_TEMPERATURE !== undefined && RAW_TEMPERATURE !== ""
-  ? Number(RAW_TEMPERATURE)
-  : undefined;
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || "default_key",
-});
+const { model: DEFAULT_MODEL, temperature: TEMPERATURE, apiKey } = getOpenAIConfig();
+const openai = new OpenAI({ apiKey: apiKey || "" });
 
 async function createJsonChatCompletion(messages: Array<{ role: string; content: string }>) {
   const params: any = {

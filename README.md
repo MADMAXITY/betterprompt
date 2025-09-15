@@ -31,7 +31,10 @@ Better Prompt is a full-stack web application that serves as a comprehensive lib
   - Dev on Windows: `$env:NODE_ENV='development'; npx tsx server/index.ts`
   - Prod on Windows: `$env:NODE_ENV='production'; node dist/index.js`
 - `OPENAI_API_KEY`: Your OpenAI API key. Required for AI endpoints under `/api/ai/*`.
-- `OPENAI_API_KEY_ENV_VAR`: Optional alternative env var name supported by the code.
+- `OPENAI_API_KEY_ENV_VAR`: Optional. You can either set this to:
+  - the name of another env var that actually holds your key (e.g. `VERCEL_OPENAI_API_KEY`), or
+  - the key value itself. The server prefers `OPENAI_API_KEY` if present.
+  - Additionally, common fallbacks are supported on server: `VERCEL_OPENAI_API_KEY`, `OPENAI_KEY`, `AI_API_KEY`, and as a last resort `NEXT_PUBLIC_OPENAI_API_KEY` / `VITE_OPENAI_API_KEY` if present in the server runtime.
 - `DATABASE_URL`: PostgreSQL connection string. Required only for Drizzle migrations (`npm run db:push`).
   - Example: `postgres://user:password@host:5432/database`
 
@@ -77,7 +80,7 @@ Better Prompt is a full-stack web application that serves as a comprehensive lib
 ## Troubleshooting
 
 - Port busy: Change the port via `PORT` (e.g., `$env:PORT='5001'`).
-- AI routes failing: Ensure `OPENAI_API_KEY` is set and that your key has access to the configured model.
+- AI routes failing: Ensure the server runtime has access to an OpenAI key via any of the supported variables above. On Vercel, set the variable in Project Settings → Environment Variables.
 
 ## System Architecture
 

@@ -1,3 +1,5 @@
+export const config = { runtime: "nodejs" };
+
 import { aiJson, readJsonBody, getOpenAIConfig } from "../_env";
 
 export default async function handler(req: any, res: any) {

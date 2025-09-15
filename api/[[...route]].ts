@@ -223,7 +223,9 @@ app.delete("/api/saved-prompts/:promptId", requireAuth, async (req, res) => {
 });
 
 // -------- AI endpoints (Vercel) --------
-app.post("/api/ai/generate-prompt", async (req, res) => {
+// Support both with and without /api prefix (Vercel may strip basepath)
+const aiGeneratePaths = ["/api/ai/generate-prompt", "/ai/generate-prompt"] as const;
+aiGeneratePaths.forEach((path) => app.post(path, async (req, res) => {
   try {
     const { goal, category, audience, tone, additionalContext } = (req.body || {}) as any;
     if (!goal) return res.status(400).json({ message: "goal is required" });
@@ -241,9 +243,10 @@ app.post("/api/ai/generate-prompt", async (req, res) => {
   } catch (e) {
     res.status(500).json({ message: (e as Error).message || "AI error" });
   }
-});
+}));
 
-app.post("/api/ai/refine-prompt", async (req, res) => {
+const aiRefinePaths = ["/api/ai/refine-prompt", "/ai/refine-prompt"] as const;
+aiRefinePaths.forEach((path) => app.post(path, async (req, res) => {
   try {
     const { originalPrompt, refinementGoal } = (req.body || {}) as any;
     if (!originalPrompt || !refinementGoal) return res.status(400).json({ message: "originalPrompt and refinementGoal are required" });
@@ -256,9 +259,10 @@ app.post("/api/ai/refine-prompt", async (req, res) => {
   } catch (e) {
     res.status(500).json({ message: (e as Error).message || "AI error" });
   }
-});
+}));
 
-app.post("/api/ai/suggest-improvements", async (req, res) => {
+const aiSuggestPaths = ["/api/ai/suggest-improvements", "/ai/suggest-improvements"] as const;
+aiSuggestPaths.forEach((path) => app.post(path, async (req, res) => {
   try {
     const { prompt } = (req.body || {}) as any;
     if (!prompt) return res.status(400).json({ message: "prompt is required" });
@@ -271,9 +275,10 @@ app.post("/api/ai/suggest-improvements", async (req, res) => {
   } catch (e) {
     res.status(500).json({ message: (e as Error).message || "AI error" });
   }
-});
+}));
 
-app.post("/api/ai/chat-prompt-builder", async (req, res) => {
+const aiChatPaths = ["/api/ai/chat-prompt-builder", "/ai/chat-prompt-builder"] as const;
+aiChatPaths.forEach((path) => app.post(path, async (req, res) => {
   try {
     const { messages = [] } = (req.body || {}) as any;
     const system = `You help users craft prompts via conversation. Respond as JSON. For ongoing: {"message":"","suggestions":["..."],"isComplete":false}. For final: {"message":"","isComplete":true,"finalPrompt":"","title":"","category":"","description":""}`;
@@ -292,4 +297,4 @@ app.post("/api/ai/chat-prompt-builder", async (req, res) => {
   } catch (e) {
     res.status(500).json({ message: (e as Error).message || "AI error" });
   }
-});
+}));

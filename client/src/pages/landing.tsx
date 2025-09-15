@@ -7,6 +7,7 @@ import TypingBadge from "@/components/typing-badge";
 
 export default function Landing() {
   const { user } = useAuth();
+  const useOriginalHeading = (import.meta as any).env?.VITE_USE_ORIGINAL_HERO_HEADING === 'true';
 
   return (
     <div className="min-h-screen bg-background">
@@ -33,9 +34,16 @@ export default function Landing() {
                 "Supercharge your workflow",
               ]}
             />
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground">
-              Work Smarter With Better Prompts
-            </h1>
+            {useOriginalHeading ? (
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground">
+                Work Smarter With Better Prompts
+              </h1>
+            ) : (
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-foreground">
+                {"Work Smarter With "}
+                <span className="text-primary">Better Prompt</span>
+              </h1>
+            )}
             <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-3xl mx-auto">
               Curated prompt library, an AI-powered builder, and a clean workspace for saving and refining your creations.
             </p>

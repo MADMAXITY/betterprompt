@@ -3,7 +3,8 @@ export const config = { runtime: "nodejs" };
 
 import { createClient } from "@supabase/supabase-js";
 import { aiJson, readJsonBody, getOpenAIConfig } from "./_env";
-import { seededCategories, seededPrompts } from "../server/default-data";
+// Import seeds from within the api directory to avoid serverless bundling issues
+import { seededCategories, seededPrompts } from "./_seeds";
 
 
 function json(res: any, status: number, body: any) {
@@ -328,6 +329,7 @@ export default async function handler(req: any, res: any) {
     // Non-API should not hit this function
     return notFound(res);
   } catch (e: any) {
+    try { console.error("API function error:", e); } catch {}
     return serverError(res, e?.message || "Function error");
   }
 }

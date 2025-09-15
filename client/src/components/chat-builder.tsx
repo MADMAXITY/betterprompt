@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useMutation } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
+import { localStorageService } from '@/lib/local-storage';
 
 interface ChatMessage {
   id: string;
@@ -168,12 +169,12 @@ export function ChatBuilder({ onComplete }: ChatBuilderProps) {
               <div className="space-y-4">
                 {messages.map((message) => (
                   <div key={message.id} className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                    <div className={`max-w-[80%] rounded-lg px-4 py-3 ${
+                    <div className={`max-w-[90%] sm:max-w-[80%] rounded-lg px-4 py-3 ${
                       message.role === 'user' 
                         ? 'bg-primary text-primary-foreground ml-4' 
                         : 'bg-muted text-foreground mr-4'
                     }`}>
-                      <p className="text-sm leading-relaxed">{message.content}</p>
+                      <p className="text-sm leading-relaxed whitespace-pre-wrap break-words break-all break-anywhere">{message.content}</p>
                       {message.role === 'assistant' && (
                         <div className="text-xs opacity-60 mt-1">
                           {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -300,7 +301,20 @@ export function ChatBuilder({ onComplete }: ChatBuilderProps) {
 
             <Card>
               <CardHeader>
-                <CardTitle className="text-sm font-medium">Generated Prompt</CardTitle>
+                <div className="flex items-center justify-between gap-3">
+                  <CardTitle className="text-sm font-medium">Generated Prompt</CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      const ok = await localStorageService.copyToClipboard(finalPrompt);
+                      toast({ title: ok ? 'Copied!' : 'Copy failed', description: ok ? 'Prompt copied to clipboard.' : 'Please try again.', ...(ok ? {} : { variant: 'destructive' }) });
+                    }}
+                    data-testid="button-copy-final-prompt"
+                  >
+                    <i className="fas fa-copy mr-2" /> Copy
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <Textarea

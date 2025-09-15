@@ -272,23 +272,7 @@
   border: 1px solid hsl(var(--border) / 0.5);
 }
 
-/* Floating Action Button */
-.fab {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  z-index: 50;
-  border-radius: 50%;
-  width: 56px;
-  height: 56px;
-  box-shadow: 0 8px 16px hsl(256 80% 60% / 0.3);
-  transition: all 0.3s ease;
-}
-
-.fab:hover {
-  transform: scale(1.1);
-  box-shadow: 0 12px 24px hsl(256 80% 60% / 0.4);
-}
+/* Removed old .fab styles to avoid conflict with Font Awesome 'fab' class */
 
 /* Mobile optimizations */
 @media (max-width: 768px) {
@@ -329,3 +313,6 @@
 /* Hide scrollbar utility for horizontal scrollers */
 .no-scrollbar{ scrollbar-width: none; }
 .no-scrollbar::-webkit-scrollbar{ display: none; }
+
+/* Force wrapping for chat bubbles */
+.break-anywhere{ overflow-wrap:anywhere; word-break:break-word; }

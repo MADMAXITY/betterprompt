@@ -16,9 +16,8 @@ export default function Landing() {
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           {/* Dot grid background */}
           <div className="dot-grid absolute inset-0" />
-          {/* Soft blobs for depth */}
+          {/* Soft blob for depth (top center only) */}
           <div className="absolute -top-24 left-1/2 -translate-x-1/2 h-[28rem] w-[28rem] rounded-full bg-primary/10 blur-3xl" />
-          <div className="absolute bottom-0 right-0 h-[18rem] w-[18rem] rounded-full bg-muted/40 blur-2xl" />
         </div>
 
         {/* Hero */}

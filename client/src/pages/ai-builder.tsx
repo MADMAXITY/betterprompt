@@ -70,7 +70,7 @@ export default function AIBuilder() {
   // AI prompt generation
   const generateMutation = useMutation({
     mutationFn: async () => {
-      const response = await apiRequest("POST", "/api/ai/generate-prompt", {
+      const response = await apiRequest("POST", "/api/generate-prompt", {
         goal,
         category: selectedCategory,
         audience,
@@ -101,7 +101,7 @@ export default function AIBuilder() {
   // Prompt refinement
   const refineMutation = useMutation({
     mutationFn: async (refinementGoal: string) => {
-      const response = await apiRequest("POST", "/api/ai/refine-prompt", {
+      const response = await apiRequest("POST", "/api/refine-prompt", {
         originalPrompt: editedContent,
         refinementGoal
       });

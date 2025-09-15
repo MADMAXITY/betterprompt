@@ -79,7 +79,7 @@ export function ChatBuilder({ onComplete }: ChatBuilderProps) {
         content: msg.content
       }));
 
-      const response = await apiRequest('POST', '/api/ai/chat-prompt-builder', {
+      const response = await apiRequest('POST', '/api/chat-prompt-builder', {
         messages: trimmedMessages,
         isComplete: false
       });

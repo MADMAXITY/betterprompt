@@ -62,7 +62,7 @@ export default function Home() {
   // AI prompt generation
   const generatePromptMutation = useMutation({
     mutationFn: async (goal: string) => {
-      const response = await apiRequest("POST", "/api/ai/generate-prompt", { goal });
+      const response = await apiRequest("POST", "/api/generate-prompt", { goal });
       return response.json();
     },
     onSuccess: (data) => {

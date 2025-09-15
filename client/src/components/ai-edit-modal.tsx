@@ -28,7 +28,7 @@ export default function AIEditModal({
 
   const editPromptMutation = useMutation({
     mutationFn: async (data: { originalPrompt: string; refinementGoal: string }) => {
-      const response = await apiRequest("POST", "/api/ai/refine-prompt", data);
+      const response = await apiRequest("POST", "/api/refine-prompt", data);
       return response.json();
     },
     onSuccess: (result) => {

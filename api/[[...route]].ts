@@ -1,5 +1,5 @@
-// Explicitly pin to a Node runtime supported by Vercel
-export const config = { runtime: "nodejs20.x" };
+// Use Node serverless runtime; Node version is configured via vercel.json functions or Project Settings
+export const config = { runtime: "nodejs" };
 
 import { createClient } from "@supabase/supabase-js";
 import { aiJson, readJsonBody, getOpenAIConfig } from "./_env";

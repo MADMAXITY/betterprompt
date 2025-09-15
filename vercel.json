@@ -4,6 +4,10 @@
     { "source": "/library", "destination": "/" },
     { "source": "/my-prompts", "destination": "/" },
     { "source": "/ai-builder", "destination": "/" }
-  ]
+  ],
+  "functions": {
+    "api/**/*.{js,ts}": {
+      "runtime": "nodejs20.x"
+    }
+  }
 }
-

@@ -98,3 +98,14 @@ export function getHealthInfo() {
   const supabaseConfigured = !!(resolveStringEnv((globalThis as any).process?.env?.SUPABASE_URL || (globalThis as any).SUPABASE_URL) && resolveStringEnv((globalThis as any).process?.env?.SUPABASE_SERVICE_ROLE_KEY || (globalThis as any).process?.env?.VITE_SUPABASE_ANON_KEY || (globalThis as any).SUPABASE_SERVICE_ROLE_KEY || (globalThis as any).VITE_SUPABASE_ANON_KEY));
   return { apiKeyPresent: !!apiKey, model, supabaseConfigured } as const;
 }
+
+// Normalize Supabase prompt rows to UI shape expected by the client
+export function normalizeDbPrompts(rows: any[] | null | undefined) {
+  if (!Array.isArray(rows)) return [] as any[];
+  return rows.map((r) => ({
+    ...r,
+    // ensure camelCase field used by the UI exists
+    categoryId: r.categoryId ?? r.category_id,
+    isFeatured: typeof r.isFeatured !== "undefined" ? r.isFeatured : !!r.is_featured,
+  }));
+}

@@ -22,6 +22,51 @@ Better Prompt is a full-stack web application that serves as a comprehensive lib
 - Start (Mac/Linux): `npm start`
 - Start (Windows, PowerShell): `$env:NODE_ENV='production'; node dist/index.js`
 
+## Deployment (Vercel)
+
+- This app uses a single catch‑all Serverless Function for all API routes: `api/[[...route]].ts`.
+  - Runtime: Node.js (`export const config = { runtime: "nodejs" }`).
+  - Handles: `/api/health`, `/api/categories`, `/api/prompts`, `/api/prompts/:id`, `/api/saved-prompts` (GET/POST), `/api/saved-prompts/:promptId` (DELETE), and AI routes under `/api/*` and `/api/ai/*`.
+  - Rationale: avoids the Vercel Hobby plan function-count limit and fixes routing/parsing inconsistencies.
+
+- Environment variables (set in Vercel Project → Settings → Environment Variables):
+  - `OPENAI_API_KEY`: Recommended. Direct OpenAI API key for AI endpoints.
+  - `OPENAI_API_KEY_ENV_VAR`: Optional. Either the name of another env var holding the key (e.g. `VERCEL_OPENAI_API_KEY`) or the literal key itself.
+  - `SUPABASE_URL`: Optional. When set with a key, enables DB‑backed prompt/category lists.
+  - `SUPABASE_SERVICE_ROLE_KEY`: Optional. Preferred server key for Supabase.
+  - `VITE_SUPABASE_ANON_KEY`: Optional. Fallback server key if service role isn’t supplied.
+
+### Supabase Fallback Behavior
+
+- If Supabase is not configured or errors, the API returns seeded categories and prompts instead of 500:
+  - See `server/default-data.ts` for seeds.
+  - Seeded prompts are returned in the `PromptWithCategory` shape (includes `prompt.category`).
+  - Saved prompts endpoints become no‑ops that still return success responses.
+
+### OpenAI Configuration
+
+- Centralized resolution in `api/_env.ts` looks for a key in:
+  - `OPENAI_API_KEY` (preferred)
+  - `OPENAI_API_KEY_ENV_VAR` (var name or literal key)
+  - Fallbacks: `VERCEL_OPENAI_API_KEY`, `OPENAI_KEY`, `AI_API_KEY` (as a last resort, public‑prefixed vars if present server‑side)
+- AI endpoints return HTTP 503 with a clear message if no key is available (instead of crashing).
+
+### Verify After Deploy
+
+- `GET /api/health` → JSON with `ok: true`, env flags, counts.
+- `GET /api/categories`, `GET /api/prompts`, `GET /api/prompts?featured=true` → 200 with data (seeds if Supabase missing).
+- `POST /api/generate-prompt`, `POST /api/refine-prompt`, `POST /api/chat-prompt-builder` → 200 if OpenAI key present; 503 otherwise.
+
+### Troubleshooting
+
+- API returns 500 on Vercel:
+  - Ensure only the catch‑all `api/[[...route]].ts` exists (remove extra serverless route files to avoid conflicts and function‑count limits).
+  - Confirm env vars are set and available to Serverless (Project → Settings → Environment Variables → Production).
+- Prompt library empty on Vercel:
+  - Without Supabase, you should still see seeded prompts. Verify `/api/prompts` returns seed data and the objects include `category` with a `name`.
+- AI endpoints failing:
+  - Verify `OPENAI_KEY: true` in `/api/health`. If false, set `OPENAI_API_KEY` (or supported alternatives) and redeploy.
+
 ## Environment Variables
 
 - `PORT`: Port to bind the server. Default: `5000`.
@@ -43,20 +88,18 @@ Better Prompt is a full-stack web application that serves as a comprehensive lib
 - Base URL: `http://localhost:5000`
 - Frontend app: `/`
 - API base: `/api`
+  - GET `/api/health`
   - GET `/api/categories`
   - GET `/api/prompts`
   - GET `/api/prompts?featured=true`
   - GET `/api/prompts/:id`
-  - POST `/api/prompts`
-  - PATCH `/api/prompts/:id`
-  - POST `/api/prompts/:id/like`
-  - POST `/api/ai/generate-prompt`
-  - POST `/api/ai/refine-prompt`
-  - POST `/api/ai/suggest-improvements`
-  - POST `/api/ai/chat-prompt-builder`
-  - GET `/api/saved-prompts/:userId`
+  - POST `/api/generate-prompt`
+  - POST `/api/refine-prompt`
+  - POST `/api/suggest-improvements`
+  - POST `/api/chat-prompt-builder`
+  - GET `/api/saved-prompts`
   - POST `/api/saved-prompts`
-  - DELETE `/api/saved-prompts/:promptId/:userId`
+  - DELETE `/api/saved-prompts/:promptId`
 
 ## Scripts
 

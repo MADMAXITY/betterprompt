@@ -1,7 +1,7 @@
 export const config = { runtime: "edge" };
 
 import { ok, notFound, serverError } from "../_edge";
-import { getSupabase, getUrl } from "../_edge";
+import { getSupabase, getUrl, normalizeDbPrompts } from "../_edge";
 import { seededPrompts, seededCategories } from "../_seeds";
 
 export default async function handler(req: Request) {
@@ -26,7 +26,8 @@ export default async function handler(req: Request) {
       .maybeSingle();
     if (error) return serverError(error.message);
     if (!data) return notFound("Prompt not found");
-    return ok(data);
+    const [normalized] = normalizeDbPrompts([data]);
+    return ok(normalized || data);
   } catch (e: any) {
     try { console.error("/api/prompts/[id] error", e); } catch {}
     return serverError(e?.message || "prompt by id failed");

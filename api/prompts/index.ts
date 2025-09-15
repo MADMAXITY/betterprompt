@@ -1,7 +1,7 @@
 export const config = { runtime: "edge" };
 
 import { ok, serverError } from "../_edge";
-import { getSupabase, getUrl, seedsWithCategory } from "../_edge";
+import { getSupabase, getUrl, seedsWithCategory, normalizeDbPrompts } from "../_edge";
 
 export default async function handler(req: Request) {
   try {
@@ -21,7 +21,8 @@ export default async function handler(req: Request) {
     }
     const { data, error } = await query;
     if (error) return ok(seedsWithCategory({ category, featured, search }));
-    return ok(data || seedsWithCategory({ category, featured, search }));
+    const normalized = normalizeDbPrompts(data || []);
+    return ok(normalized);
   } catch (e: any) {
     try { console.error("/api/prompts error", e); } catch {}
     return serverError(e?.message || "prompts failed");

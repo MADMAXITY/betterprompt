@@ -28,6 +28,19 @@ function getSupabase() {
   return createClient(SUPABASE_URL, SUPABASE_KEY);
 }
 
+function seedsWithCategory() {
+  return seededPrompts.map((p) => ({
+    ...p,
+    category: seededCategories.find((c) => c.id === p.categoryId) || {
+      id: p.categoryId,
+      name: "General",
+      icon: "fas fa-tag",
+      color: "muted",
+      description: "",
+    },
+  }));
+}
+
 async function getUserIdFromAuthHeader(req: any, supabase: any): Promise<string | null> {
   try {
     const auth = req.headers["authorization"] || req.headers["Authorization"];
@@ -92,7 +105,7 @@ export default async function handler(req: any, res: any) {
     // PROMPTS LIST
     if (method === "GET" && path === "/api/prompts") {
       const supabase = getSupabase();
-      if (!supabase) return ok(res, seededPrompts);
+      if (!supabase) return ok(res, seedsWithCategory());
       const category = url.searchParams.get("category") || undefined;
       const featured = url.searchParams.get("featured") || undefined;
       const search = url.searchParams.get("search") || undefined;
@@ -105,10 +118,10 @@ export default async function handler(req: any, res: any) {
           query = query.or(`title.ilike.${q},description.ilike.${q},content.ilike.${q}`);
         }
         const { data, error } = await query;
-        if (error) return ok(res, seededPrompts);
+        if (error) return ok(res, seedsWithCategory());
         return ok(res, data || []);
       } catch {
-        return ok(res, seededPrompts);
+        return ok(res, seedsWithCategory());
       }
     }
 
@@ -118,19 +131,19 @@ export default async function handler(req: any, res: any) {
       const id = promptById[1];
       const supabase = getSupabase();
       if (!supabase) {
-        const match = seededPrompts.find(p => p.id === id);
+        const match = seedsWithCategory().find(p => p.id === id);
         return match ? ok(res, match) : notFound(res, "Prompt not found");
       }
       try {
         const { data, error } = await supabase.from("prompts").select("*, category:categories(*)").eq("id", id).maybeSingle();
         if (error) {
-          const match = seededPrompts.find(p => p.id === id);
+          const match = seedsWithCategory().find(p => p.id === id);
           return match ? ok(res, match) : notFound(res, "Prompt not found");
         }
         if (!data) return notFound(res, "Prompt not found");
         return ok(res, data);
       } catch {
-        const match = seededPrompts.find(p => p.id === id);
+        const match = seedsWithCategory().find(p => p.id === id);
         return match ? ok(res, match) : notFound(res, "Prompt not found");
       }
     }

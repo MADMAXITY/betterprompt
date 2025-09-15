@@ -1,16 +1,15 @@
-export const config = { runtime: "nodejs" };
+export const config = { runtime: "edge" };
 
-import type { IncomingMessage, ServerResponse } from "http";
-import { ok, badRequest, serverError, readJsonBody } from "./_util";
-import { aiJson, resolveOpenAIKey } from "./_util";
+import { ok, badRequest, serverError } from "./_edge";
+import { aiJson, resolveOpenAIKey } from "./_edge";
 
-export default async function handler(req: IncomingMessage, res: ServerResponse) {
-  if ((req.method || "").toUpperCase() !== "POST") return badRequest(res, "Method not allowed");
+export default async function handler(req: Request) {
+  if ((req.method || "").toUpperCase() !== "POST") return badRequest("Method not allowed");
   try {
-    if (!resolveOpenAIKey()) return serverError(res, "OPENAI_API_KEY not configured");
-    const body: any = (await readJsonBody(req)) || {};
+    if (!resolveOpenAIKey()) return serverError("OPENAI_API_KEY not configured");
+    const body: any = await req.json().catch(() => ({}));
     const goal = body.goal as string | undefined;
-    if (!goal) return badRequest(res, "goal is required");
+    if (!goal) return badRequest("goal is required");
     const { category, audience, tone, additionalContext } = body;
     const system = `You are an expert prompt engineer who creates high-quality prompts. Respond with JSON in this shape: {"title":"","description":"","content":"","suggestedCategory":""}`;
     const userMsg = `Generate a reusable prompt for: "${goal}"\nCategory: ${category || 'Not specified'}\nAudience: ${audience || 'General'}\nTone: ${tone || 'Professional'}\nAdditional: ${additionalContext || 'None'}`;
@@ -18,7 +17,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     const content = resp.choices?.[0]?.message?.content ?? "{}";
     let data: any = {};
     try { data = JSON.parse(content); } catch { data = {}; }
-    return ok(res, {
+    return ok({
       title: data.title || "Generated Prompt",
       description: data.description || "AI-generated prompt",
       content: data.content || "",
@@ -26,7 +25,6 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     });
   } catch (e: any) {
     try { console.error("/api/generate-prompt error", e); } catch {}
-    return serverError(res, e?.message || "generate failed");
+    return serverError(e?.message || "generate failed");
   }
 }
-

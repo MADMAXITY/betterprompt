@@ -1,16 +1,16 @@
-export const config = { runtime: "nodejs" };
+export const config = { runtime: "edge" };
 
-import type { IncomingMessage, ServerResponse } from "http";
-import { ok, serverError, getSupabase, getUrl, seedsWithCategory } from "../_util";
+import { ok, serverError } from "../_edge";
+import { getSupabase, getUrl, seedsWithCategory } from "../_edge";
 
-export default async function handler(req: IncomingMessage, res: ServerResponse) {
+export default async function handler(req: Request) {
   try {
     const url = getUrl(req);
     const category = url.searchParams.get("category") || undefined;
     const featured = url.searchParams.get("featured") || undefined;
     const search = url.searchParams.get("search") || undefined;
-    const supabase = await getSupabase();
-    if (!supabase) return ok(res, seedsWithCategory({ category, featured, search }));
+    const supabase = getSupabase();
+    if (!supabase) return ok(seedsWithCategory({ category, featured, search }));
 
     let query = supabase.from("prompts").select("*, category:categories(*)");
     if (category) query = query.eq("category_id", category);
@@ -20,10 +20,10 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       query = query.or(`title.ilike.${q},description.ilike.${q},content.ilike.${q}`);
     }
     const { data, error } = await query;
-    if (error) return ok(res, seedsWithCategory({ category, featured, search }));
-    return ok(res, data || seedsWithCategory({ category, featured, search }));
+    if (error) return ok(seedsWithCategory({ category, featured, search }));
+    return ok(data || seedsWithCategory({ category, featured, search }));
   } catch (e: any) {
     try { console.error("/api/prompts error", e); } catch {}
-    return serverError(res, e?.message || "prompts failed");
+    return serverError(e?.message || "prompts failed");
   }
 }

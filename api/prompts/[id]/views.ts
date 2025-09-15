@@ -1,10 +1,8 @@
-export const config = { runtime: "nodejs" };
+export const config = { runtime: "edge" };
 
-import type { IncomingMessage, ServerResponse } from "http";
-import { ok, badRequest } from "../../_util";
+import { ok, badRequest } from "../../_edge";
 
-export default async function handler(req: IncomingMessage, res: ServerResponse) {
-  if ((req.method || "").toUpperCase() !== "POST") return badRequest(res, "Method not allowed");
-  return ok(res, { message: "ok" });
+export default async function handler(req: Request) {
+  if ((req.method || "").toUpperCase() !== "POST") return badRequest("Method not allowed");
+  return ok({ message: "ok" });
 }
-

@@ -1,13 +1,12 @@
-export const config = { runtime: "nodejs" };
+export const config = { runtime: "edge" };
 
-import type { IncomingMessage, ServerResponse } from "http";
-import { ok, serverError, getSupabase, getHealthInfo } from "./_util";
+import { ok, serverError, getSupabase, getHealthInfo } from "./_edge";
 
-export default async function handler(req: IncomingMessage, res: ServerResponse) {
+export default async function handler(req: Request) {
   try {
     const { apiKeyPresent, model, supabaseConfigured } = getHealthInfo();
     let counts: any = { categories: 0, prompts: 0 };
-    const supabase = await getSupabase();
+    const supabase = getSupabase();
     if (supabase) {
       try {
         const { count: catCount } = await supabase.from("categories").select("id", { count: "exact", head: true });
@@ -15,13 +14,13 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         counts = { categories: catCount || 0, prompts: pCount || 0 };
       } catch {}
     }
-    return ok(res, {
+    return ok({
       ok: true,
       env: {
-        SUPABASE_URL: !!process.env.SUPABASE_URL,
-        SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
-        VITE_SUPABASE_ANON_KEY: !!process.env.VITE_SUPABASE_ANON_KEY,
-        VERCEL: !!process.env.VERCEL,
+        SUPABASE_URL: !!(globalThis as any).process?.env?.SUPABASE_URL || !!(globalThis as any).SUPABASE_URL,
+        SUPABASE_SERVICE_ROLE_KEY: !!(globalThis as any).process?.env?.SUPABASE_SERVICE_ROLE_KEY || !!(globalThis as any).SUPABASE_SERVICE_ROLE_KEY,
+        VITE_SUPABASE_ANON_KEY: !!(globalThis as any).process?.env?.VITE_SUPABASE_ANON_KEY || !!(globalThis as any).VITE_SUPABASE_ANON_KEY,
+        VERCEL: !!(globalThis as any).process?.env?.VERCEL || !!(globalThis as any).VERCEL,
         OPENAI_KEY: apiKeyPresent,
         OPENAI_MODEL: model,
       },
@@ -30,6 +29,6 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     });
   } catch (e: any) {
     try { console.error("/api/health error", e); } catch {}
-    return serverError(res, e?.message || "health failed");
+    return serverError(e?.message || "health failed");
   }
 }

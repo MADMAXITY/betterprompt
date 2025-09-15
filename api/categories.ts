@@ -1,18 +1,18 @@
-export const config = { runtime: "nodejs" };
+export const config = { runtime: "edge" };
 
-import type { IncomingMessage, ServerResponse } from "http";
-import { ok, serverError, getSupabase } from "./_util";
+import { ok } from "./_edge";
+import { getSupabase } from "./_edge";
 import { seededCategories } from "./_seeds";
 
-export default async function handler(_req: IncomingMessage, res: ServerResponse) {
+export default async function handler(_req: Request) {
   try {
-    const supabase = await getSupabase();
-    if (!supabase) return ok(res, seededCategories);
+    const supabase = getSupabase();
+    if (!supabase) return ok(seededCategories);
     const { data, error } = await supabase.from("categories").select("*").order("name");
-    if (error) return ok(res, seededCategories);
-    return ok(res, data || seededCategories);
+    if (error) return ok(seededCategories);
+    return ok(data || seededCategories);
   } catch (e: any) {
     try { console.error("/api/categories error", e); } catch {}
-    return ok(res, seededCategories);
+    return ok(seededCategories);
   }
 }

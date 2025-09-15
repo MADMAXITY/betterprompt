@@ -1,7 +1,9 @@
-export const config = { runtime: "nodejs" };
+// Explicitly pin to a Node runtime supported by Vercel
+export const config = { runtime: "nodejs20.x" };
 
 import { createClient } from "@supabase/supabase-js";
 import { aiJson, readJsonBody, getOpenAIConfig } from "./_env";
+import { seededCategories, seededPrompts } from "../server/default-data";
 
 
 function json(res: any, status: number, body: any) {
@@ -78,26 +80,45 @@ export default async function handler(req: any, res: any) {
       });
     }
 
-    // CATEGORIES
+    // CATEGORIES (with graceful fallback to seeds)
     if (method === "GET" && path === "/api/categories") {
       const supabase = getSupabase();
-      if (!supabase) return json(res, 503, { message: "Database not configured" });
+      if (!supabase) return ok(res, seededCategories);
       try {
         const { data, error } = await supabase.from("categories").select("*").order("name");
-        if (error) return serverError(res, `Database error: ${error.message}`);
-        return ok(res, data || []);
-      } catch (e: any) {
-        return serverError(res, `Database exception: ${e.message}`);
+        if (error) return ok(res, seededCategories);
+        return ok(res, data || seededCategories);
+      } catch {
+        return ok(res, seededCategories);
       }
     }
 
-    // PROMPTS LIST
+    // PROMPTS LIST (with graceful fallback to seeds)
     if (method === "GET" && path === "/api/prompts") {
       const supabase = getSupabase();
-      if (!supabase) return json(res, 503, { message: "Database not configured" });
       const category = url.searchParams.get("category") || undefined;
       const featured = url.searchParams.get("featured") || undefined;
       const search = url.searchParams.get("search") || undefined;
+
+      // Helper to transform seeds → PromptWithCategory[]
+      const seedsWithCategory = () => {
+        const catMap = new Map(seededCategories.map((c) => [c.id, c] as const));
+        let list = seededPrompts;
+        if (category) list = list.filter((p) => p.categoryId === category);
+        if (featured === "true") list = list.filter((p) => !!p.isFeatured);
+        if (search) {
+          const q = search.toLowerCase();
+          list = list.filter(
+            (p) =>
+              p.title.toLowerCase().includes(q) ||
+              p.description.toLowerCase().includes(q) ||
+              p.content.toLowerCase().includes(q)
+          );
+        }
+        return list.map((p) => ({ ...p, category: catMap.get(p.categoryId)! }));
+      };
+
+      if (!supabase) return ok(res, seedsWithCategory());
       try {
         let query = supabase.from("prompts").select("*, category:categories(*)");
         if (category) query = query.eq("category_id", category);
@@ -107,26 +128,43 @@ export default async function handler(req: any, res: any) {
           query = query.or(`title.ilike.${q},description.ilike.${q},content.ilike.${q}`);
         }
         const { data, error } = await query;
-        if (error) return serverError(res, `Database error: ${error.message}`);
-        return ok(res, data || []);
-      } catch (e: any) {
-        return serverError(res, `Database exception: ${e.message}`);
+        if (error) return ok(res, seedsWithCategory());
+        return ok(res, data || seedsWithCategory());
+      } catch {
+        return ok(res, seedsWithCategory());
       }
     }
 
-    // PROMPT BY ID
+    // PROMPT BY ID (with graceful fallback to seeds)
     const promptById = path.match(/^\/api\/prompts\/([^\/]+)$/);
     if (method === "GET" && promptById) {
       const id = promptById[1];
       const supabase = getSupabase();
-      if (!supabase) return json(res, 503, { message: "Database not configured" });
+      if (!supabase) {
+        const catMap = new Map(seededCategories.map((c) => [c.id, c] as const));
+        const p = seededPrompts.find((s) => s.id === id);
+        if (!p) return notFound(res, "Prompt not found");
+        return ok(res, { ...p, category: catMap.get(p.categoryId)! });
+      }
       try {
-        const { data, error } = await supabase.from("prompts").select("*, category:categories(*)").eq("id", id).maybeSingle();
-        if (error) return serverError(res, `Database error: ${error.message}`);
+        const { data, error } = await supabase
+          .from("prompts")
+          .select("*, category:categories(*)")
+          .eq("id", id)
+          .maybeSingle();
+        if (error) {
+          const catMap = new Map(seededCategories.map((c) => [c.id, c] as const));
+          const p = seededPrompts.find((s) => s.id === id);
+          if (!p) return serverError(res, `Database error: ${error.message}`);
+          return ok(res, { ...p, category: catMap.get(p.categoryId)! });
+        }
         if (!data) return notFound(res, "Prompt not found");
         return ok(res, data);
-      } catch (e: any) {
-        return serverError(res, `Database exception: ${e.message}`);
+      } catch {
+        const catMap = new Map(seededCategories.map((c) => [c.id, c] as const));
+        const p = seededPrompts.find((s) => s.id === id);
+        if (!p) return serverError(res, "Database exception");
+        return ok(res, { ...p, category: catMap.get(p.categoryId)! });
       }
     }
 

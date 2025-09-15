@@ -95,7 +95,7 @@ export default function AIEditModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleCancel}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden p-0">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-auto p-0">
         {/* Modal Header */}
         <DialogHeader className="flex flex-row items-center justify-between p-6 border-b border-border">
           <div className="flex items-center space-x-3">

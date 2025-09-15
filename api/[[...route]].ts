@@ -1,5 +1,6 @@
 import express, { type Request, type Response, type NextFunction } from "express";
 import { createClient } from "@supabase/supabase-js";
+import OpenAI from "openai";
 
 const app = express();
 app.use(express.json());
@@ -9,6 +10,20 @@ app.use(express.urlencoded({ extended: false }));
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 const supabase = SUPABASE_URL && SUPABASE_KEY ? createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+// OpenAI client for AI routes
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR;
+const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-4o-mini";
+const RAW_TEMPERATURE = process.env.OPENAI_TEMPERATURE;
+const OPENAI_TEMPERATURE = RAW_TEMPERATURE !== undefined && RAW_TEMPERATURE !== "" ? Number(RAW_TEMPERATURE) : undefined;
+const openai = OPENAI_API_KEY ? new OpenAI({ apiKey: OPENAI_API_KEY }) : null as any;
+
+async function aiJson(messages: Array<{ role: string; content: string }>) {
+  if (!openai) throw new Error("OPENAI_API_KEY missing");
+  const params: any = { model: OPENAI_MODEL, messages, response_format: { type: "json_object" } };
+  if (typeof OPENAI_TEMPERATURE === "number" && Number.isFinite(OPENAI_TEMPERATURE)) params.temperature = OPENAI_TEMPERATURE;
+  return openai.chat.completions.create(params);
+}
 
 // Middleware to require Supabase auth for certain routes
 async function requireAuth(req: Request, res: Response, next: NextFunction) {
@@ -204,5 +219,77 @@ app.delete("/api/saved-prompts/:promptId", requireAuth, async (req, res) => {
     res.json({ message: "Prompt unsaved successfully" });
   } catch (error) {
     res.status(500).json({ message: "Failed to unsave prompt" });
+  }
+});
+
+// -------- AI endpoints (Vercel) --------
+app.post("/api/ai/generate-prompt", async (req, res) => {
+  try {
+    const { goal, category, audience, tone, additionalContext } = (req.body || {}) as any;
+    if (!goal) return res.status(400).json({ message: "goal is required" });
+    const system = `You are an expert prompt engineer who creates high-quality prompts. Respond with JSON in this shape: {"title":"","description":"","content":"","suggestedCategory":""}`;
+    const user = `Generate a reusable prompt for: "${goal}"\nCategory: ${category || 'Not specified'}\nAudience: ${audience || 'General'}\nTone: ${tone || 'Professional'}\nAdditional: ${additionalContext || 'None'}`;
+    const resp = await aiJson([{ role: "system", content: system }, { role: "user", content: user }]);
+    const content = resp.choices?.[0]?.message?.content ?? "{}";
+    const data = JSON.parse(content);
+    res.json({
+      title: data.title || "Generated Prompt",
+      description: data.description || "AI-generated prompt",
+      content: data.content || "",
+      suggestedCategory: data.suggestedCategory || "Writing",
+    });
+  } catch (e) {
+    res.status(500).json({ message: (e as Error).message || "AI error" });
+  }
+});
+
+app.post("/api/ai/refine-prompt", async (req, res) => {
+  try {
+    const { originalPrompt, refinementGoal } = (req.body || {}) as any;
+    if (!originalPrompt || !refinementGoal) return res.status(400).json({ message: "originalPrompt and refinementGoal are required" });
+    const system = `You improve prompts. Respond with JSON: {"refinedPrompt":"","improvements":["..."]}`;
+    const user = `Original:\n${originalPrompt}\n\nGoal: ${refinementGoal}`;
+    const resp = await aiJson([{ role: "system", content: system }, { role: "user", content: user }]);
+    const content = resp.choices?.[0]?.message?.content ?? "{}";
+    const data = JSON.parse(content);
+    res.json({ refinedPrompt: data.refinedPrompt || originalPrompt, improvements: data.improvements || [] });
+  } catch (e) {
+    res.status(500).json({ message: (e as Error).message || "AI error" });
+  }
+});
+
+app.post("/api/ai/suggest-improvements", async (req, res) => {
+  try {
+    const { prompt } = (req.body || {}) as any;
+    if (!prompt) return res.status(400).json({ message: "prompt is required" });
+    const system = `You are an expert prompt engineer. Respond with JSON {"suggestions":["..."]}`;
+    const user = `Analyze and suggest improvements for this prompt:\n\n${prompt}`;
+    const resp = await aiJson([{ role: "system", content: system }, { role: "user", content: user }]);
+    const content = resp.choices?.[0]?.message?.content ?? "{}";
+    const data = JSON.parse(content);
+    res.json({ suggestions: data.suggestions || [] });
+  } catch (e) {
+    res.status(500).json({ message: (e as Error).message || "AI error" });
+  }
+});
+
+app.post("/api/ai/chat-prompt-builder", async (req, res) => {
+  try {
+    const { messages = [] } = (req.body || {}) as any;
+    const system = `You help users craft prompts via conversation. Respond as JSON. For ongoing: {"message":"","suggestions":["..."],"isComplete":false}. For final: {"message":"","isComplete":true,"finalPrompt":"","title":"","category":"","description":""}`;
+    const resp = await aiJson([{ role: "system", content: system }, ...messages]);
+    const content = resp.choices?.[0]?.message?.content ?? "{}";
+    const data = JSON.parse(content);
+    res.json({
+      message: data.message || "Let's craft your prompt. What's your goal?",
+      suggestions: data.suggestions,
+      isComplete: !!data.isComplete,
+      finalPrompt: data.finalPrompt,
+      title: data.title,
+      category: data.category,
+      description: data.description,
+    });
+  } catch (e) {
+    res.status(500).json({ message: (e as Error).message || "AI error" });
   }
 });

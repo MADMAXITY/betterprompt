@@ -1,8 +1,10 @@
-import { aiJson, readJsonBody } from "../_env";
+import { aiJson, readJsonBody, getOpenAIConfig } from "../_env";
 
 export default async function handler(req: any, res: any) {
   if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
   try {
+    const { apiKey } = getOpenAIConfig();
+    if (!apiKey) return res.status(503).json({ message: "OPENAI_API_KEY not configured" });
     const body = (await readJsonBody(req)) || (req.body || {});
     const { originalPrompt, refinementGoal } = (body || {}) as any;
     if (!originalPrompt || !refinementGoal) return res.status(400).json({ message: "originalPrompt and refinementGoal are required" });

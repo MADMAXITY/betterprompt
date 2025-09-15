@@ -1,6 +1,7 @@
 import express, { type Request, type Response, type NextFunction } from "express";
 import { createClient } from "@supabase/supabase-js";
-import { aiJson } from "./_env";
+import { seededCategories, seededPrompts } from "../server/default-data";
+import { aiJson, getOpenAIConfig } from "./_env";
 
 const app = express();
 app.use(express.json());
@@ -16,7 +17,11 @@ const supabase = SUPABASE_URL && SUPABASE_KEY ? createClient(SUPABASE_URL, SUPAB
 // Middleware to require Supabase auth for certain routes
 async function requireAuth(req: Request, res: Response, next: NextFunction) {
   try {
-    if (!supabase) return res.status(500).json({ message: "Auth not configured" });
+    // If Supabase isn't configured in this environment, allow through with anon user
+    if (!supabase) {
+      (req as any).userId = "anon";
+      return next();
+    }
     const auth = req.headers["authorization"] || req.headers["Authorization"];
     if (!auth || Array.isArray(auth)) return res.status(401).json({ message: "Unauthorized" });
     const token = (auth as string).startsWith("Bearer ") ? (auth as string).slice(7) : undefined;
@@ -33,6 +38,7 @@ async function requireAuth(req: Request, res: Response, next: NextFunction) {
 // Health
 app.get("/api/health", async (_req, res) => {
   try {
+    const { apiKey, model } = getOpenAIConfig();
     if (!supabase) {
       return res.json({
         ok: true,
@@ -41,6 +47,8 @@ app.get("/api/health", async (_req, res) => {
           SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
           VITE_SUPABASE_ANON_KEY: !!process.env.VITE_SUPABASE_ANON_KEY,
           VERCEL: !!process.env.VERCEL,
+          OPENAI_KEY: !!apiKey,
+          OPENAI_MODEL: model,
         },
         counts: { categories: 0, prompts: 0 },
       });
@@ -59,6 +67,8 @@ app.get("/api/health", async (_req, res) => {
         SUPABASE_SERVICE_ROLE_KEY: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
         VITE_SUPABASE_ANON_KEY: !!process.env.VITE_SUPABASE_ANON_KEY,
         VERCEL: !!process.env.VERCEL,
+        OPENAI_KEY: !!apiKey,
+        OPENAI_MODEL: model,
       },
       counts: { categories: catErr ? 0 : catCount || 0, prompts: pErr ? 0 : pCount || 0 },
     });
@@ -69,13 +79,17 @@ app.get("/api/health", async (_req, res) => {
 
 // Categories
 app.get("/api/categories", async (_req, res) => {
-  if (!supabase) return res.json([]);
-  const { data, error } = await supabase
-    .from("categories")
-    .select("*")
-    .order("name");
-  if (error) return res.status(500).json({ message: error.message });
-  res.json(data || []);
+  try {
+    if (!supabase) return res.json(seededCategories);
+    const { data, error } = await supabase
+      .from("categories")
+      .select("*")
+      .order("name");
+    if (error) return res.json(seededCategories);
+    res.json(data || []);
+  } catch (e) {
+    res.json(seededCategories);
+  }
 });
 
 // Helpers
@@ -98,7 +112,7 @@ function mapRowToPrompt(row: any) {
 // Prompts list and filters
 app.get("/api/prompts", async (req, res) => {
   try {
-    if (!supabase) return res.json([]);
+    if (!supabase) return res.json(seededPrompts);
     const { category, search, featured } = req.query as Record<string, string | undefined>;
     let query = supabase.from("prompts").select("*, category:categories(*)");
 
@@ -110,25 +124,39 @@ app.get("/api/prompts", async (req, res) => {
     }
 
     const { data, error } = await query;
-    if (error) return res.status(500).json({ message: error.message });
+    if (error) return res.json(seededPrompts);
     const mapped = (data || []).map(mapRowToPrompt);
     res.json(mapped);
   } catch (e) {
-    res.status(500).json({ message: (e as Error).message });
+    res.json(seededPrompts);
   }
 });
 
 // Prompt by id
 app.get("/api/prompts/:id", async (req, res) => {
-  if (!supabase) return res.status(404).json({ message: "Prompt not found" });
-  const { data, error } = await supabase
-    .from("prompts")
-    .select("*, category:categories(*)")
-    .eq("id", req.params.id)
-    .maybeSingle();
-  if (error) return res.status(500).json({ message: error.message });
-  if (!data) return res.status(404).json({ message: "Prompt not found" });
-  res.json(mapRowToPrompt(data));
+  try {
+    if (!supabase) {
+      const fallback = seededPrompts.find(p => p.id === req.params.id);
+      if (!fallback) return res.status(404).json({ message: "Prompt not found" });
+      return res.json(fallback);
+    }
+    const { data, error } = await supabase
+      .from("prompts")
+      .select("*, category:categories(*)")
+      .eq("id", req.params.id)
+      .maybeSingle();
+    if (error) {
+      const fallback = seededPrompts.find(p => p.id === req.params.id);
+      if (!fallback) return res.status(404).json({ message: "Prompt not found" });
+      return res.json(fallback);
+    }
+    if (!data) return res.status(404).json({ message: "Prompt not found" });
+    res.json(mapRowToPrompt(data));
+  } catch (e) {
+    const fallback = seededPrompts.find(p => p.id === req.params.id);
+    if (!fallback) return res.status(404).json({ message: "Prompt not found" });
+    return res.json(fallback);
+  }
 });
 
 export default function handler(req: any, res: any) {
@@ -166,7 +194,7 @@ app.get("/api/saved-prompts", requireAuth, async (req, res) => {
 
 app.post("/api/saved-prompts", requireAuth, async (req, res) => {
   try {
-    if (!supabase) return res.status(500).json({ message: "Auth not configured" });
+    if (!supabase) return res.status(200).json({ message: "Saved (no-op: storage not configured)" });
     const userId = (req as any).userId as string;
     const promptId = (req.body?.promptId as string) || "";
     if (!promptId) return res.status(400).json({ message: "promptId is required" });
@@ -197,7 +225,7 @@ app.post("/api/saved-prompts", requireAuth, async (req, res) => {
 
 app.delete("/api/saved-prompts/:promptId", requireAuth, async (req, res) => {
   try {
-    if (!supabase) return res.status(500).json({ message: "Auth not configured" });
+    if (!supabase) return res.status(200).json({ message: "Prompt unsaved (no-op: storage not configured)" });
     const userId = (req as any).userId as string;
     const promptId = req.params.promptId;
     await supabase

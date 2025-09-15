@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/api/ai/:path*", "destination": "/api/:path*" },
     { "source": "/auth/callback", "destination": "/" },
     { "source": "/library", "destination": "/" },
     { "source": "/my-prompts", "destination": "/" },
